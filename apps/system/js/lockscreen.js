@@ -656,7 +656,11 @@ var LockScreen = {
     this.mainScreen.classList.add('locked');
     this.overlay.classList.remove('unlocked');
     this.overlay.hidden = false;
-    screen.mozLockOrientation(OrientationManager.defaultOrientation);
+    console.log('1 Before set -> ', screen.mozOrientation);
+    var allowed =
+      screen.mozLockOrientation(OrientationManager.defaultOrientation);
+    console.log('1 Allowed: ', allowed);
+    console.log('1 After set -> ', screen.mozOrientation);
 
     if (!wasAlreadyLocked) {
       if (document.mozFullScreen)
