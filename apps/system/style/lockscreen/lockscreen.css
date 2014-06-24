@@ -655,6 +655,41 @@ button::-moz-focus-inner {
   width: 100%;
 }
 
+#lockscreen-notification-arrow {
+  width: 100%;
+  height: 1.6rem;
+  background-image: url('./images/lockscreen_notification_arrow.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+
+  position: absolute;
+  left: 0;
+  z-index: 1;
+  background-size: 1.6rem 1.6rem;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+#lockscreen-notification-arrow.visible {
+  opacity: 1;
+}
+
+/* please see notifications.css to see how the height is calculated */
+
+#lockscreen-notification-arrow {
+  top: calc(50% - 5.4rem + 17.5rem);
+}
+
+#lockscreen-notification-arrow.collapsed {
+  top: calc(50% - 8.8rem + 11.7rem);
+}
+
+@media (max-height:480px) {
+  #lockscreen-notification-arrow.collapsed {
+    top: calc(50% - 5.85rem + 5.8rem);
+  }
+}
+
 #lockscreen-message {
   position: relative;
   top: 18rem;
