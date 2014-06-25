@@ -210,6 +210,18 @@
   background-color: transparent;
 }
 
+#notifications-lockscreen-container.masked-top {
+  mask: url('lockscreen_container_mask.svg#fade_mask_top');
+}
+
+#notifications-lockscreen-container.masked-bottom {
+  mask: url('lockscreen_container_mask.svg#fade_mask_bottom');
+}
+
+#notifications-lockscreen-container.masked-both {
+  mask: url('lockscreen_container_mask.svg#fade_mask_both');
+}
+
 /* in collapsed mode (there is a widget)
  * desired vertical position is centered in the space
  * between date and widget

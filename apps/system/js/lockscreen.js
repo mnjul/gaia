@@ -326,20 +326,16 @@
         if (evt.detail.type === 'status') {
           switch (evt.detail.data.playStatus) {
             case 'PLAYING':
-              this.notificationsContainer.classList.add('collapsed');
-              this.notificationArrow.classList.add('collapsed');
-              break;
             case 'PAUSED':
               this.notificationsContainer.classList.add('collapsed');
               this.notificationArrow.classList.add('collapsed');
+              this.setNotificationMaskArrowVisibility();
               break;
             case 'STOPPED':
-              this.notificationsContainer.classList.remove('collapsed');
-              this.notificationArrow.classList.remove('collapsed');
-              break;
             case 'mozinterruptbegin':
               this.notificationsContainer.classList.remove('collapsed');
               this.notificationArrow.classList.remove('collapsed');
+              this.setNotificationMaskArrowVisibility();
               break;
           }
         }
@@ -348,11 +344,12 @@
         if (evt.detail.origin === this.mediaPlaybackWidget.origin) {
           this.notificationsContainer.classList.remove('collapsed');
           this.notificationArrow.classList.remove('collapsed');
+          this.setNotificationMaskArrowVisibility();
         }
         break;
       case 'scroll':
         if (this.notificationsContainer === evt.target) {
-          this.setNotificationArrowVisibility();
+          this.setNotificationMaskArrowVisibility();
           break;
         }
         break;
@@ -1107,9 +1104,43 @@
   /**
    * The "more notifications" arrow only shows
    * when the user hasn't scrolled onto the end of the container
+   * And the fade-out gradient masks only shows
+   * when:
+   *  - top: when the user scrolls to bottom
+   *  - bottom: when the user scrolls to top
+   *  - both: when the user scrolls in between
+   * but we need to rule out the situation that
+   * the container isn't actually scrollable
    */
-  LockScreen.prototype.setNotificationArrowVisibility =
-  function ls_setNotificationArrowVisibility() {
+  LockScreen.prototype.setNotificationMaskArrowVisibility =
+  function ls_setNotificationMaskArrowVisibility() {
+    // mask
+    if(this.notificationsContainer.clientHeight ===
+       this.notificationsContainer.scrollHeight){
+      // no mask if the container can't be scrolled
+      this.notificationsContainer.classList.remove('masked-top');
+      this.notificationsContainer.classList.remove('masked-bottom');
+      this.notificationsContainer.classList.remove('masked-both');
+    }else{
+      if(this.notificationsContainer.scrollTop +
+       this.notificationsContainer.clientHeight ===
+       this.notificationsContainer.scrollHeight){
+        // user scrolls to bottom -> top mask
+        this.notificationsContainer.classList.remove('masked-bottom');
+        this.notificationsContainer.classList.remove('masked-both');
+        this.notificationsContainer.classList.add('masked-top');
+      }else if(this.notificationsContainer.scrollTop === 0){
+        // user scrolls to top -> bottom mask
+        this.notificationsContainer.classList.remove('masked-top');
+        this.notificationsContainer.classList.remove('masked-both');
+        this.notificationsContainer.classList.add('masked-bottom');
+      }else{
+        // anything in between -> both masks
+        this.notificationsContainer.classList.remove('masked-top');
+        this.notificationsContainer.classList.remove('masked-bottom');
+        this.notificationsContainer.classList.add('masked-both');
+      }
+    }
     if(this.notificationsContainer.scrollTop +
        this.notificationsContainer.clientHeight <
        this.notificationsContainer.scrollHeight){

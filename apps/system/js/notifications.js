@@ -429,8 +429,9 @@ var NotificationScreen = {
 
       window.lockScreen.maskedBackground.classList.remove('blank');
 
-      // check if lockscreen's 'more notifications' arrow needs to show
-      window.lockScreen.setNotificationArrowVisibility();
+      // check if lockscreen's masks and
+      // 'more notifications' arrow needs to show
+      window.lockScreen.setNotificationMaskArrowVisibility();
     }
 
     if (notify && !this.isResending) {
@@ -529,16 +530,11 @@ var NotificationScreen = {
         window.lockScreen.maskedBackground.style.backgroundColor =
           'transparent';
         window.lockScreen.maskedBackground.classList.add('blank');
-
-        // no 'more notifications' arrow
-        window.lockScreen.notificationArrow.classList.remove('visible');
-      } else {
-        // since we chagned the number of notifications,
-        // and we still have notifications there,
-        // check if the 'more notifications' arrow
-        // in lockscreenneeds to show or hide
-        window.lockScreen.setNotificationArrowVisibility();
       }
+
+      // check if lockscreen's masks and
+      // 'more notifications' arrow needs to show
+      window.lockScreen.setNotificationMaskArrowVisibility();
     }
     this.updateStatusBarIcon();
 
@@ -567,8 +563,9 @@ var NotificationScreen = {
     // and use the simple gradient
     window.lockScreen.maskedBackground.style.backgroundColor = 'transparent';
     window.lockScreen.maskedBackground.classList.add('blank');
-    // no 'more notifications' arrow
-    window.lockScreen.notificationArrow.classList.remove('visible');
+    // check if lockscreen's masks and
+    // 'more notifications' arrow needs to show
+    window.lockScreen.setNotificationMaskArrowVisibility();
   },
 
   updateStatusBarIcon: function ns_updateStatusBarIcon(unread) {
