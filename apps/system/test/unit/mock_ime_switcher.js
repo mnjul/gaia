@@ -6,7 +6,7 @@
   };
 
   MockIMESwitcher.prototype = {
-    init: function mis_init() {
+    start: function mis_start() {
     },
 
     show: function mis_show() {

@@ -14,7 +14,7 @@
     this._fakenotiTip = null;
   };
 
-  IMESwitcher.prototype.init = function is_init(showAllCallback) {
+  IMESwitcher.prototype.start = function is_start(showAllCallback) {
     this._notifIMEContainer =
       document.getElementById('keyboard-show-ime-list');
 

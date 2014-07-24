@@ -12,7 +12,7 @@ var mocksForIMESwitcher = new MocksHelper([
 suite('IMESwitcher', function() {
   mocksForIMESwitcher.attachTestHelpers();
 
-  test('init()', function() {
+  test('start()', function() {
     var imeSwitcher = new IMESwitcher();
     var spyCallback = this.sinon.spy();
 
@@ -34,7 +34,7 @@ suite('IMESwitcher', function() {
       this.sinon.stub(document, 'getElementById')
       .returns(fakeNotifIMEContainer);
 
-    imeSwitcher.init(spyCallback);
+    imeSwitcher.start(spyCallback);
 
     assert.isTrue(stubGetElement.calledWith('keyboard-show-ime-list'));
     assert.equal(imeSwitcher._notifIMEContainer, fakeNotifIMEContainer);

@@ -123,7 +123,7 @@ var KeyboardManager = {
     this.keyboardFrameContainer = document.getElementById('keyboards');
 
     this.imeSwitcher = new IMESwitcher();
-    this.imeSwitcher.init(this.showAll.bind(this));
+    this.imeSwitcher.start(this.showAll.bind(this));
 
     // get enabled keyboard from mozSettings, parse their manifest
 
