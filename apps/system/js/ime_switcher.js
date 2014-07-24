@@ -29,6 +29,15 @@
     this._showAllCallback = showAllCallback;
   };
 
+  IMESwitcher.prototype.stop = function is_stop() {
+    this._fakenoti.removeEventListener('mousedown', this);
+    this._notifIMEContainer = null;
+    this._fakenoti = null;
+    this._fakenotiMessage = null;
+    this._fakenotiTip = null;
+    this._showAllCallback = undefined;
+  };
+
   IMESwitcher.prototype.show = function is_show(appName_, imeName) {
     var _ = navigator.mozL10n.get;
 
