@@ -12,6 +12,7 @@
     this._fakenoti = null;
     this._fakenotiMessage = null;
     this._fakenotiTip = null;
+    this._showAllCallback = undefined;
   };
 
   IMESwitcher.prototype.start = function is_start(showAllCallback) {
@@ -23,10 +24,9 @@
     this._fakenotiMessage = this._fakenoti.querySelector('.message');
     this._fakenotiTip = this._fakenoti.querySelector('.tip');
 
-    this._fakenoti.addEventListener('mousedown', function is_fakenotiAct(evt) {
-        evt.preventDefault();
-        showAllCallback();
-    }.bind(this));
+    this._fakenoti.addEventListener('mousedown', this);
+
+    this._showAllCallback = showAllCallback;
   };
 
   IMESwitcher.prototype.show = function is_show(appName_, imeName) {
@@ -49,6 +49,17 @@
   IMESwitcher.prototype.hide = function is_hide() {
     this._fakenoti.classList.remove('activated');
     window.dispatchEvent(new CustomEvent('keyboardimeswitcherhide'));
+  };
+
+  IMESwitcher.prototype.handleEvent = function is_handleEvent(evt) {
+    switch(evt.type){
+      case 'mousedown':
+        if(evt.currentTarget === this._fakenoti){
+          evt.preventDefault();
+          this._showAllCallback();
+        }
+        break;
+    }
   };
 
   exports.IMESwitcher = IMESwitcher;
