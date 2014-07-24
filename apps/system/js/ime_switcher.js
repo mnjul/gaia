@@ -39,15 +39,13 @@
   };
 
   IMESwitcher.prototype.show = function is_show(appName_, imeName) {
-    var _ = navigator.mozL10n.get;
-
     window.dispatchEvent(new CustomEvent('keyboardimeswitchershow'));
 
-    this._fakenotiMessage.textContent = _('ime-switching-title', {
+    navigator.mozL10n.localize(this._fakenotiMessage, 'ime-switching-title', {
       appName: appName_,
       name: imeName
     });
-    this._fakenotiTip.textContent = _('ime-switching-tip');
+    navigator.mozL10n.localize(this._fakenotiTip, 'ime-switching-tip');
 
     // Instead of create DOM element dynamically, we can just turn the message
     // on/off and add message as we need. This save the time to create and
