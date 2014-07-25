@@ -76,11 +76,11 @@ suite('IMESwitcher', function() {
       )
     );
 
-    assert.equal(imeSwitcher._utilityTrayContainer, null);
-    assert.equal(imeSwitcher._notificationContainer, null);
-    assert.equal(imeSwitcher._notificationTitle, null);
-    assert.equal(imeSwitcher._notificationTip, null);
-    assert.equal(imeSwitcher._showAllCallback, undefined);
+    assert.strictEqual(imeSwitcher._utilityTrayContainer, null);
+    assert.strictEqual(imeSwitcher._notificationContainer, null);
+    assert.strictEqual(imeSwitcher._notificationTitle, null);
+    assert.strictEqual(imeSwitcher._notificationTip, null);
+    assert.strictEqual(imeSwitcher._showAllCallback, undefined);
   });
 
   suite('show() and hide()', function(){
