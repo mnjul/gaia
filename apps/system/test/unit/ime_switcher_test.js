@@ -16,49 +16,71 @@ suite('IMESwitcher', function() {
     var imeSwitcher = new IMESwitcher();
     var spyCallback = this.sinon.spy();
 
-    var fakeNotifIMEContainer = {
+    var fakeUtilityTrayContainer = {
       querySelector: this.sinon.stub()
     };
 
-    var fakeNoti = {
+    var notificationContainer = {
       querySelector: this.sinon.stub(),
       addEventListener: this.sinon.stub()
     };
 
-    fakeNotifIMEContainer.querySelector.returns(fakeNoti);
+    fakeUtilityTrayContainer.querySelector.returns(notificationContainer);
 
-    fakeNoti.querySelector.onFirstCall().returns('msgElem')
-                          .onSecondCall().returns('tipElem');
+    notificationContainer.querySelector.onFirstCall().returns('msgElem')
+                         .onSecondCall().returns('tipElem');
 
     var stubGetElement =
       this.sinon.stub(document, 'getElementById')
-      .returns(fakeNotifIMEContainer);
+      .returns(fakeUtilityTrayContainer);
 
     imeSwitcher.start(spyCallback);
 
     assert.isTrue(stubGetElement.calledWith('keyboard-show-ime-list'));
-    assert.equal(imeSwitcher._notifIMEContainer, fakeNotifIMEContainer);
-    assert.equal(imeSwitcher._fakenoti, fakeNoti);
+    assert.equal(imeSwitcher._utilityTrayContainer, fakeUtilityTrayContainer);
+    assert.equal(imeSwitcher._notificationContainer, notificationContainer);
     assert.isTrue(
-      fakeNotifIMEContainer.querySelector.calledWith('.fake-notification')
+      fakeUtilityTrayContainer.querySelector.calledWith('.fake-notification')
     );
-    assert.equal(imeSwitcher._fakenotiMessage, 'msgElem');
-    assert.equal(imeSwitcher._fakenotiTip, 'tipElem');
-    assert.equal(fakeNoti.querySelector.args[0][0], '.message');
-    assert.equal(fakeNoti.querySelector.args[1][0], '.tip');
+    assert.equal(imeSwitcher._notificationTitle, 'msgElem');
+    assert.equal(imeSwitcher._notificationTip, 'tipElem');
+    assert.equal(notificationContainer.querySelector.args[0][0], '.message');
+    assert.equal(notificationContainer.querySelector.args[1][0], '.tip');
 
-    assert.equal(fakeNoti.addEventListener.args[0][0], 'mousedown');
+    assert.isTrue(
+      notificationContainer.addEventListener.calledWith(
+        'mousedown', imeSwitcher
+      )
+    );
+  });
 
-    var evt = {
-      preventDefault: this.sinon.spy()
+  test('stop()', function() {
+    var imeSwitcher = new IMESwitcher();
+
+    var notificationContainer = {
+      removeEventListener: this.sinon.stub()
     };
 
-    assert.isFalse(spyCallback.called);
+    imeSwitcher._notificationContainer = notificationContainer;
 
-    fakeNoti.addEventListener.callArgWith(1, evt);
+    imeSwitcher._utilityTrayContainer = "UTC";
+    imeSwitcher._notificationTitle = "NT";
+    imeSwitcher._notificationTip = "NTP";
+    imeSwitcher._showAllCallback = "SACB";
 
-    assert.isTrue(spyCallback.called);
-    assert.isTrue(evt.preventDefault.called);
+    imeSwitcher.stop();
+
+    assert.isTrue(
+      notificationContainer.removeEventListener.calledWith(
+        'mousedown', imeSwitcher
+      )
+    );
+
+    assert.equal(imeSwitcher._utilityTrayContainer, null);
+    assert.equal(imeSwitcher._notificationContainer, null);
+    assert.equal(imeSwitcher._notificationTitle, null);
+    assert.equal(imeSwitcher._notificationTip, null);
+    assert.equal(imeSwitcher._showAllCallback, undefined);
   });
 
   suite('show() and hide()', function(){
@@ -80,7 +102,7 @@ suite('IMESwitcher', function() {
 
       imeSwitcher = new IMESwitcher();
 
-      imeSwitcher._fakenoti = {
+      imeSwitcher._notificationContainer = {
         classList: {
           add: this.sinon.spy(),
           remove: this.sinon.spy()
@@ -93,13 +115,9 @@ suite('IMESwitcher', function() {
     });
 
     test('show()', function(){
-      imeSwitcher._fakenotiMessage = {
-        textContent: ''
-      };
+      imeSwitcher._notificationTitle = document.createElement('div');
 
-      imeSwitcher._fakenotiTip = {
-        textContent: ''
-      };
+      imeSwitcher._notificationTip = document.createElement('div');
 
       var realMozL10n = navigator.mozL10n;
       navigator.mozL10n = MockL10n;
@@ -111,34 +129,80 @@ suite('IMESwitcher', function() {
       }));
 
       assert.equal(
-        imeSwitcher._fakenotiMessage.textContent,
-        MockL10n.get('ime-switching-title', {
+        imeSwitcher._notificationTitle.dataset.l10nId,
+        'ime-switching-title'
+      );
+      assert.equal(
+        imeSwitcher._notificationTitle.dataset.l10nArgs,
+        JSON.stringify({
           appName: 'DummyKBApp',
           name: 'DummyKBKB'
         })
       );
+
       assert.equal(
-        imeSwitcher._fakenotiTip.textContent,
-        MockL10n.get('ime-switching-tip')
+        imeSwitcher._notificationTip.dataset.l10nId,
+        'ime-switching-tip'
       );
 
       assert.isTrue(
-        imeSwitcher._fakenoti.classList.add.calledWith('activated')
+        imeSwitcher._notificationContainer.classList.add.calledWith('activated')
       );
 
       navigator.mozL10n = realMozL10n;
-
     });
 
     test('hide()', function(){
       imeSwitcher.hide();
       assert.isTrue(
-        imeSwitcher._fakenoti.classList.remove.calledWith('activated')
+        imeSwitcher._notificationContainer.classList.remove
+        .calledWith('activated')
       );
       assert.isTrue(stubDispatchEvent.calledWith({
         type: 'keyboardimeswitcherhide'
       }));
     });
-
   });
+
+  test('handleEvent()', function(){
+    var imeSwitcher = new IMESwitcher();
+
+    imeSwitcher._showAllCallback = this.sinon.spy();
+    imeSwitcher._notificationContainer = 'XXX';
+
+    var evt = {
+      type: 'mousedown',
+      preventDefault: this.sinon.spy(),
+      currentTarget: 'XXX'
+    };
+
+    imeSwitcher.handleEvent(evt);
+
+    assert.isTrue(evt.preventDefault.called);
+    assert.isTrue(imeSwitcher._showAllCallback.called);
+
+    // unequal target
+
+    evt.currentTarget = 'YYY';
+    evt.preventDefault.reset();
+    imeSwitcher._showAllCallback.reset();
+
+    imeSwitcher.handleEvent(evt);
+
+    assert.isFalse(evt.preventDefault.called);
+    assert.isFalse(imeSwitcher._showAllCallback.called);
+
+    // unhandled type
+
+    evt.type = 'mouseup';
+    evt.currentTarget = 'XXX';
+    evt.preventDefault.reset();
+    imeSwitcher._showAllCallback.reset();
+
+    imeSwitcher.handleEvent(evt);
+
+    assert.isFalse(evt.preventDefault.called);
+    assert.isFalse(imeSwitcher._showAllCallback.called);
+  });
+
 });
