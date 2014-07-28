@@ -167,6 +167,9 @@ var KeyboardManager = {
     }).bind(this);
     this.transitionManager.start();
 
+    this.keyboardFrameManager = new KeyboardFrameManager(this);
+    this.keyboardFrameManager.start();
+
     LazyLoader.load([
       'shared/js/keyboard_helper.js'
     ], function() {
@@ -325,7 +328,7 @@ var KeyboardManager = {
       // We need to reset the previous frame nly when we switch to a new frame
       if (previousFrame && previousFrame != self.showingLayout.frame) {
         self._debug('reset previousFrame.');
-        self.resetKeyboardFrame(previousFrame);
+        self.keyboardFrameManager.resetFrame(previousFrame);
       }
     }
 
@@ -564,19 +567,8 @@ var KeyboardManager = {
       return;
     }
 
-    this.resetKeyboardFrame(this.showingLayout.frame);
+    this.keyboardFrameManager.resetFrame(this.showingLayout.frame);
     this.showingLayout.reset();
-  },
-
-  // Reset the specified keyboard frame.
-  resetKeyboardFrame: function km_resetKeyboardFrame(frame) {
-    if (!frame) {
-      return;
-    }
-
-    frame.classList.add('hide');
-    this.setLayoutFrameActive(frame, false);
-    frame.removeEventListener('mozbrowserresize', this, true);
   },
 
   hideKeyboard: function km_hideKeyboard() {
