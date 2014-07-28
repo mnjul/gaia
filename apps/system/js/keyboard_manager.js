@@ -78,6 +78,7 @@ var KeyboardManager = {
   showingLayout: {
     type: 'text',
     index: 0,
+    layout: null,
     height: 0
   },
 
@@ -319,14 +320,14 @@ var KeyboardManager = {
         group = 'text';
       }
 
-      var previousFrame = self.keyboardFrameManager.retrieveShowingFrame();
+      var previousLayout = self.showingLayout.layout;
       self.setKeyboardToShow(group);
 
       // We need to reset the previous frame nly when we switch to a new frame
-      if (previousFrame &&
-          previousFrame != self.keyboardFrameManager.retrieveShowingFrame()) {
+      if (previousLayout &&
+          previousLayout != self.showingLayout.layout) {
         self._debug('reset previousFrame.');
-        self.keyboardFrameManager.uninitFrame(previousFrame);
+        self.keyboardFrameManager.uninitFrameByLayout(previousLayout);
       }
     }
 
@@ -497,9 +498,8 @@ var KeyboardManager = {
 
     // XXX: get data from KFM module
     //      but actually use it to do jobs for this module
-    if (self.keyboardFrameManager.retrieveShowingFrame() &&
-      self.keyboardFrameManager.retrieveShowingFrame()
-      .dataset.frameManifestURL === manifestURL) {
+    if (this.showingLayout.layout &&
+      this.showingLayout.layout.manifestURL === manifestURL) {
       revokeShowedType = this.showingLayout.type;
       this.hideKeyboard();
     }
@@ -535,9 +535,12 @@ var KeyboardManager = {
     this.showingLayout.type = group;
     this.showingLayout.index = index;
     var layout = this.keyboardLayouts[group][index];
-    this.keyboardFrameManager.assignShowingFrame(
-      this.launchLayoutFrame(layout)
-    );
+
+    // launchLayoutFrame will write into frame manager's data (for now)
+    // so no need to get its return value
+    // XXX: remove return value for launchLayoutFrame
+    this.launchLayoutFrame(layout);
+    this.showingLayout.layout = layout;
 
     // By setting launchOnly to true, we load the keyboard frame w/o bringing it
     // to the backgorund; this is convenient to call
@@ -553,9 +556,7 @@ var KeyboardManager = {
       this.transitionManager.handleResize(this.showingLayout.height);
     }
 
-    this.keyboardFrameManager.initFrame(
-      this.keyboardFrameManager.retrieveShowingFrame()
-    );
+    this.keyboardFrameManager.initFrameByLayout(layout);
   },
 
   /**
@@ -609,6 +610,8 @@ var KeyboardManager = {
     clearTimeout(this.switchChangeTimeout);
 
     var showed = this.showingLayout;
+    // XXX: name change
+    var oldLayout = showed.layout;
 
     this.switchChangeTimeout = setTimeout(function keyboardSwitchLayout() {
       if (!this.keyboardLayouts[showed.type]) {
@@ -621,9 +624,7 @@ var KeyboardManager = {
       var nextLayout = this.keyboardLayouts[showed.type][index];
       // Only resetShowingKeyboard() if the running layout is not the same app
       // to prevent flash of black when switching.
-      if (this.keyboardFrameManager.retrieveShowingFrame()
-          .dataset.frameManifestURL !==
-          nextLayout.manifestURL) {
+      if (oldLayout.manifestURL !== nextLayout.manifestURL) {
         this.resetShowingKeyboard();
       }
 

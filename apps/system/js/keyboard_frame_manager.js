@@ -47,6 +47,13 @@
     frame.addEventListener('mozbrowserresize', this._keyboardManager, true);
   };
 
+  KeyboardFrameManager.prototype.initFrameByLayout =
+    function kfm_initFrameByLayout(layout) {
+    console.trace();
+    var frame = this.runningLayouts[layout.manifestURL][layout.id];
+    this.initFrame(frame);
+  };
+
   KeyboardFrameManager.prototype.uninitFrame = function kfm_uninitFrame(frame) {
     if (!frame) {
       return;
@@ -55,6 +62,12 @@
     frame.classList.add('hide');
     this._keyboardManager.setLayoutFrameActive(frame, false);
     frame.removeEventListener('mozbrowserresize', this._keyboardManager, true);
+  };
+
+  KeyboardFrameManager.prototype.uninitFrameByLayout =
+    function kfm_uninitFrameByLayout(layout) {
+    var frame = this.runningLayouts[layout.manifestURL][layout.id];
+    this.uninitFrame(frame);
   };
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
