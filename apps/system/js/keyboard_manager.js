@@ -73,14 +73,8 @@ var KeyboardManager = {
   // }
   runningLayouts: {},
   showingLayout: {
-    frame: null,
     type: 'text',
     index: 0,
-    reset: function() {
-      this.frame = null;
-      this.type = 'text';
-      this.index = 0;
-    },
     height: 0
   },
 
@@ -322,13 +316,14 @@ var KeyboardManager = {
         group = 'text';
       }
 
-      var previousFrame = self.showingLayout.frame;
+      var previousFrame = self.keyboardFrameManager.retrieveShowingFrame();
       self.setKeyboardToShow(group);
 
       // We need to reset the previous frame nly when we switch to a new frame
-      if (previousFrame && previousFrame != self.showingLayout.frame) {
+      if (previousFrame &&
+          previousFrame != self.keyboardFrameManager.retrieveShowingFrame()) {
         self._debug('reset previousFrame.');
-        self.keyboardFrameManager.resetFrame(previousFrame);
+        self.keyboardFrameManager.uninitFrame(previousFrame);
       }
     }
 
@@ -487,8 +482,11 @@ var KeyboardManager = {
       return;
     }
 
-    if (this.showingLayout.frame &&
-      this.showingLayout.frame.dataset.frameManifestURL === manifestURL) {
+    // XXX: get data from KFM module
+    //      but actually use it to do jobs for this module
+    if (self.keyboardFrameManager.retrieveShowingFrame() &&
+      self.keyboardFrameManager.retrieveShowingFrame()
+      .dataset.frameManifestURL === manifestURL) {
       revokeShowedType = this.showingLayout.type;
       this.hideKeyboard();
     }
@@ -522,7 +520,9 @@ var KeyboardManager = {
     this.showingLayout.type = group;
     this.showingLayout.index = index;
     var layout = this.keyboardLayouts[group][index];
-    this.showingLayout.frame = this.launchLayoutFrame(layout);
+    this.keyboardFrameManager.assignShowingFrame(
+      this.launchLayoutFrame(layout)
+    );
 
     // By setting launchOnly to true, we load the keyboard frame w/o bringing it
     // to the backgorund; this is convenient to call
@@ -538,10 +538,9 @@ var KeyboardManager = {
       this.transitionManager.handleResize(this.showingLayout.height);
     }
 
-    this.showingLayout.frame.classList.remove('hide');
-    this.setLayoutFrameActive(this.showingLayout.frame, true);
-    this.showingLayout.frame.addEventListener(
-         'mozbrowserresize', this, true);
+    this.keyboardFrameManager.initFrame(
+      this.keyboardFrameManager.retrieveShowingFrame()
+    );
   },
 
   /**
@@ -567,8 +566,11 @@ var KeyboardManager = {
       return;
     }
 
-    this.keyboardFrameManager.resetFrame(this.showingLayout.frame);
-    this.showingLayout.reset();
+    this.keyboardFrameManager.resetShowingFrame();
+
+    this.keyboardFrameManager.assignShowingFrame(null);
+    this.showingLayout.type = 'text';
+    this.showingLayout.index = 0;
   },
 
   hideKeyboard: function km_hideKeyboard() {
@@ -604,7 +606,8 @@ var KeyboardManager = {
       var nextLayout = this.keyboardLayouts[showed.type][index];
       // Only resetShowingKeyboard() if the running layout is not the same app
       // to prevent flash of black when switching.
-      if (showed.frame.dataset.frameManifestURL !==
+      if (this.keyboardFrameManager.retrieveShowingFrame()
+          .dataset.frameManifestURL !==
           nextLayout.manifestURL) {
         this.resetShowingKeyboard();
       }

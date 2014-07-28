@@ -18,11 +18,28 @@
     this._showingFrame = undefined;
   };
 
-  KeyboardFrameManager.prototype.resetShowingFrame = function kfm_resetShowingFrame() {
-    // determine which showing frame it is right now
+  KeyboardFrameManager.prototype.assignShowingFrame =
+    function kfm_assignShowingFrame(frame) {
+    this._showingFrame = frame;
   };
 
-  KeyboardFrameManager.prototype.resetFrame = function kfm_resetFrame(frame) {
+  KeyboardFrameManager.prototype.resetShowingFrame =
+    function kfm_resetShowingFrame() {
+    this.resetFrame(this._showingFrame);
+  };
+
+  KeyboardFrameManager.prototype.retrieveShowingFrame =
+    function kfm_retrieveShowingFrame() {
+    return this._showingFrame;
+  };
+
+  KeyboardFrameManager.prototype.initFrame = function kfm_initFrame(frame) {
+    frame.classList.remove('hide');
+    this._keyboardManager.setLayoutFrameActive(frame, true);
+    frame.addEventListener('mozbrowserresize', this._keyboardManager, true);
+  };
+
+  KeyboardFrameManager.prototype.uninitFrame = function kfm_uninitFrame(frame) {
     if (!frame) {
       return;
     }
@@ -31,7 +48,6 @@
     this._keyboardManager.setLayoutFrameActive(frame, false);
     frame.removeEventListener('mozbrowserresize', this._keyboardManager, true);
   };
-
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
 
