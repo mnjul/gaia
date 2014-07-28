@@ -71,7 +71,10 @@ var KeyboardManager = {
   // 'keyboard.gaiamobile.org/manifest.webapp' : {
   //   'English': aIframe
   // }
+  // XXX: no longer true; the "aIframe" would be a dummy empty string.
+  // XXX: let's make the {mapping} into ['English'] array later
   runningLayouts: {},
+
   showingLayout: {
     type: 'text',
     index: 0,
@@ -80,7 +83,7 @@ var KeyboardManager = {
 
   focusChangeTimeout: 0,
   switchChangeTimeout: 0,
-  _onDebug: false,
+  _onDebug: true,
   _debug: function km_debug(msg) {
     if (this._onDebug)
       console.log('[Keyboard Manager] ' + msg);
@@ -348,17 +351,20 @@ var KeyboardManager = {
     }
   },
 
+  // XXX: this should be in KFM at all
   launchLayoutFrame: function km_launchLayoutFrame(layout) {
     if (this.isRunningLayout(layout)) {
       this._debug('this layout is running');
-      return this.runningLayouts[layout.manifestURL][layout.id];
+      return this.keyboardFrameManager
+             .runningLayouts[layout.manifestURL][layout.id];
     }
 
     var layoutFrame = null;
     // The layout is in a keyboard app that has been launched.
     if (this.isRunningKeyboard(layout)) {
       // Re-use the iframe by changing its src.
-      var runningKeybaord = this.runningLayouts[layout.manifestURL];
+      var runningKeybaord =
+        this.keyboardFrameManager.runningLayouts[layout.manifestURL];
       for (var name in runningKeybaord) {
         var oldPath = runningKeybaord[name].dataset.framePath;
         var newPath = layout.path;
@@ -368,6 +374,7 @@ var KeyboardManager = {
           layoutFrame.src = layout.origin + newPath;
           this._debug(name + ' is overwritten: ' + layoutFrame.src);
           delete runningKeybaord[name];
+          delete this.runningLayouts[layout.manifestURL][name];
           break;
         }
       }
@@ -389,7 +396,13 @@ var KeyboardManager = {
       this.runningLayouts[layout.manifestURL] = {};
     }
 
-    this.runningLayouts[layout.manifestURL][layout.id] = layoutFrame;
+    if (!(layout.manifestURL in this.keyboardFrameManager.runningLayouts)) {
+      this.keyboardFrameManager.runningLayouts[layout.manifestURL] = {};
+    }
+
+    this.runningLayouts[layout.manifestURL][layout.id] = '';
+    this.keyboardFrameManager.runningLayouts[layout.manifestURL][layout.id] =
+      layoutFrame;
     return layoutFrame;
   },
 
@@ -491,17 +504,19 @@ var KeyboardManager = {
       this.hideKeyboard();
     }
 
-    for (var id in this.runningLayouts[manifestURL]) {
-      var frame = this.runningLayouts[manifestURL][id];
+    for (var id in this.keyboardFrameManager.runningLayouts[manifestURL]) {
+      var frame = this.keyboardFrameManager.runningLayouts[manifestURL][id];
       try {
         frame.parentNode.removeChild(frame);
       } catch (e) {
         // if it doesn't work, noone cares
       }
       delete this.runningLayouts[manifestURL][id];
+      delete this.keyboardFrameManager.runningLayouts[manifestURL][id];
     }
 
     delete this.runningLayouts[manifestURL];
+    delete this.keyboardFrameManager.runningLayouts[manifestURL];
 
     if (handleOOM && revokeShowedType !== null) {
       this.setKeyboardToShow(revokeShowedType);

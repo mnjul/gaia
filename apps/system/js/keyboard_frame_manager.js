@@ -8,6 +8,14 @@
   var KeyboardFrameManager = function(keyboardManager) {
     this._keyboardManager = keyboardManager;
     this._showingFrame = undefined;
+
+    // The set of running keyboards.
+    // This is a map from keyboard manifestURL to an object like this:
+    // 'keyboard.gaiamobile.org/manifest.webapp' : {
+    //   'English': aIframe
+    // }
+
+    this.runningLayouts = {};
   };
 
   KeyboardFrameManager.prototype.start = function kfm_start() {
@@ -25,7 +33,7 @@
 
   KeyboardFrameManager.prototype.resetShowingFrame =
     function kfm_resetShowingFrame() {
-    this.resetFrame(this._showingFrame);
+    this.uninitFrame(this._showingFrame);
   };
 
   KeyboardFrameManager.prototype.retrieveShowingFrame =
