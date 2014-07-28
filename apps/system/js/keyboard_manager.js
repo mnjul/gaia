@@ -84,7 +84,7 @@ var KeyboardManager = {
 
   focusChangeTimeout: 0,
   switchChangeTimeout: 0,
-  _onDebug: true,
+  _onDebug: false,
   _debug: function km_debug(msg) {
     if (this._onDebug)
       console.log('[Keyboard Manager] ' + msg);
@@ -307,7 +307,10 @@ var KeyboardManager = {
 
     // Set one of the keyboard layout for the specific group as active.
     function activateKeyboard() {
+      console.log('AK ', group);
       // if we already have layouts for the group, no need to check default
+      console.trace();
+      console.log(self.keyboardLayouts[group]);
       if (!self.keyboardLayouts[group]) {
         KeyboardHelper.checkDefaults(function changedDefaults() {
             KeyboardHelper.getLayouts({ enabled: true },
@@ -324,8 +327,13 @@ var KeyboardManager = {
       self.setKeyboardToShow(group);
 
       // We need to reset the previous frame nly when we switch to a new frame
-      if (previousLayout &&
-          previousLayout != self.showingLayout.layout) {
+      // this "frame" is decided by manifestURL
+      // XXX: abstract this into KFM
+      if (self.keyboardFrameManager.getFrameByLayout(previousLayout) &&
+          self.keyboardFrameManager.getFrameByLayout(previousLayout) !=
+          self.keyboardFrameManager.getFrameByLayout(
+            self.showingLayout.layout
+         )) {
         self._debug('reset previousFrame.');
         self.keyboardFrameManager.uninitFrameByLayout(previousLayout);
       }

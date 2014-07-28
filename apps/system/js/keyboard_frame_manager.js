@@ -49,7 +49,7 @@
 
   KeyboardFrameManager.prototype.initFrameByLayout =
     function kfm_initFrameByLayout(layout) {
-    console.trace();
+    // console.trace();
     var frame = this.runningLayouts[layout.manifestURL][layout.id];
     this.initFrame(frame);
   };
@@ -68,6 +68,15 @@
     function kfm_uninitFrameByLayout(layout) {
     var frame = this.runningLayouts[layout.manifestURL][layout.id];
     this.uninitFrame(frame);
+  };
+
+  // XXX: outside user of this function should be abstracted
+  KeyboardFrameManager.prototype.getFrameByLayout =
+    function kfm_getFrameByLayout(layout) {
+    if (!layout) {
+      return null;
+    }
+    return this.runningLayouts[layout.manifestURL][layout.id];
   };
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
