@@ -7,7 +7,6 @@
    */
   var KeyboardFrameManager = function(keyboardManager) {
     this._keyboardManager = keyboardManager;
-    this._showingFrame = undefined;
 
     // The set of running keyboards.
     // This is a map from keyboard manifestURL to an object like this:
@@ -24,21 +23,6 @@
 
   KeyboardFrameManager.prototype.stop = function kfm_stop() {
     this._showingFrame = undefined;
-  };
-
-  KeyboardFrameManager.prototype.assignShowingFrame =
-    function kfm_assignShowingFrame(frame) {
-    this._showingFrame = frame;
-  };
-
-  KeyboardFrameManager.prototype.resetShowingFrame =
-    function kfm_resetShowingFrame() {
-    this.uninitFrame(this._showingFrame);
-  };
-
-  KeyboardFrameManager.prototype.retrieveShowingFrame =
-    function kfm_retrieveShowingFrame() {
-    return this._showingFrame;
   };
 
   KeyboardFrameManager.prototype.initFrame = function kfm_initFrame(frame) {

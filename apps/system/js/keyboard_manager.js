@@ -590,7 +590,7 @@ var KeyboardManager = {
       return;
     }
 
-    this.keyboardFrameManager.resetShowingFrame();
+    this.keyboardFrameManager.uninitFrameByLayout(this.showingLayout.layout);
 
     this.keyboardFrameManager.assignShowingFrame(null);
     this.showingLayout.type = 'text';
