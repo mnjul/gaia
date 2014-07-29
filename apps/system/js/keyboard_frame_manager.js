@@ -15,7 +15,15 @@
     // }
 
     this.runningLayouts = {};
+
+    this._onDebug = false;
   };
+
+  KeyboardFrameManager.prototype._debug = function kfm__debug(msg) {
+    if (this._onDebug) {
+      console.log('[Keyboard Manager] ' + msg);
+    }
+  },
 
   KeyboardFrameManager.prototype.start = function kfm_start() {
 
@@ -27,7 +35,7 @@
 
   KeyboardFrameManager.prototype.initFrame = function kfm_initFrame(frame) {
     frame.classList.remove('hide');
-    this._keyboardManager.setLayoutFrameActive(frame, true);
+    this.setFrameActive(frame, true);
     frame.addEventListener('mozbrowserresize', this._keyboardManager, true);
   };
 
@@ -44,7 +52,7 @@
     }
 
     frame.classList.add('hide');
-    this._keyboardManager.setLayoutFrameActive(frame, false);
+    this.setFrameActive(frame, false);
     frame.removeEventListener('mozbrowserresize', this._keyboardManager, true);
   };
 
@@ -62,6 +70,31 @@
     }
     return this.runningLayouts[layout.manifestURL][layout.id];
   };
+
+  KeyboardFrameManager.prototype.setLayoutFrameActive =
+    function kfm_setLayoutFrameActive(layout, active) {
+    var frame = this.runningLayouts[layout.manifestURL][layout.id];
+
+    this.setFrameActive(frame, active);
+  };
+
+  KeyboardFrameManager.prototype.setFrameActive =
+    function kfm_setFrameActive(frame, active) {
+    this._debug('setFrameActive: ' +
+                frame.dataset.frameManifestURL +
+                frame.dataset.framePath + ', active: ' + active);
+
+    if (frame.setVisible) {
+      frame.setVisible(active);
+    }
+    if (frame.setInputMethodActive) {
+      frame.setInputMethodActive(active);
+    }
+
+    // XXX: decouple this
+    this._keyboardManager.hasActiveKeyboard = active;
+  }
+
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
 

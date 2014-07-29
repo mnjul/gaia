@@ -393,7 +393,7 @@ var KeyboardManager = {
     if (!layoutFrame) {
       layoutFrame = this.loadKeyboardLayout(layout);
       // TODO make sure setLayoutFrameActive function is ready
-      this.setLayoutFrameActive(layoutFrame, false);
+      this.keyboardFrameManager.setFrameActive(layoutFrame, false);
       layoutFrame.classList.add('hide');
       layoutFrame.dataset.frameManifestURL = layout.manifestURL;
     }
@@ -412,6 +412,7 @@ var KeyboardManager = {
     this.runningLayouts[layout.manifestURL][layout.id] = '';
     this.keyboardFrameManager.runningLayouts[layout.manifestURL][layout.id] =
       layoutFrame;
+
     return layoutFrame;
   },
 
@@ -592,7 +593,6 @@ var KeyboardManager = {
 
     this.keyboardFrameManager.uninitFrameByLayout(this.showingLayout.layout);
 
-    this.keyboardFrameManager.assignShowingFrame(null);
     this.showingLayout.type = 'text';
     this.showingLayout.index = 0;
   },
@@ -691,20 +691,6 @@ var KeyboardManager = {
       });
       menu.start();
     }, SWITCH_CHANGE_DELAY);
-  },
-
-  setLayoutFrameActive: function km_setLayoutFrameActive(frame, active) {
-    this._debug('setLayoutFrameActive: ' +
-                frame.dataset.frameManifestURL +
-                frame.dataset.framePath + ', active: ' + active);
-
-    if (frame.setVisible) {
-      frame.setVisible(active);
-    }
-    if (frame.setInputMethodActive) {
-      frame.setInputMethodActive(active);
-    }
-    this.hasActiveKeyboard = active;
   }
 };
 
