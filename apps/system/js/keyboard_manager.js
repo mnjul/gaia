@@ -330,7 +330,7 @@ var KeyboardManager = {
           (previousLayout.manifestURL != self.showingLayout.layout.manifestURL || 
           previousLayout.id != self.showingLayout.layout.id)) {
         self._debug('reset previousFrame.');
-        self.keyboardFrameManager.uninitFrameByLayout(previousLayout);
+        self.keyboardFrameManager.resetFrameByLayout(previousLayout);
       }
     }
 
@@ -409,6 +409,7 @@ var KeyboardManager = {
       this.hideKeyboard();
     }
 
+    // XXX this actually deletes
     for (var id in this.keyboardFrameManager.runningLayouts[manifestURL]) {
       var frame = this.keyboardFrameManager.runningLayouts[manifestURL][id];
       try {
@@ -417,11 +418,11 @@ var KeyboardManager = {
         // if it doesn't work, noone cares
       }
       this.deleteRunningLayout(manifestURL, id);
-      this.keyboardFrameManager.deleteLayout(manifestURL, id);
+      this.keyboardFrameManager.deleteRunningLayout(manifestURL, id);
     }
 
-    this.deleteRunningLayout(manifestURL);
-    this.keyboardFrameManager.deleteLayout(manifestURL);
+    this.deleteRunningKeyboard(manifestURL);
+    this.keyboardFrameManager.deleteRunningKeyboard(manifestURL);
 
     if (handleOOM && revokeShowedType !== null) {
       this.setKeyboardToShow(revokeShowedType);
@@ -461,7 +462,7 @@ var KeyboardManager = {
       this.transitionManager.handleResize(this.showingLayout.height);
     }
 
-    this.keyboardFrameManager.initFrameByLayout(layout);
+    this.keyboardFrameManager.setupFrameByLayout(layout);
   },
 
   /**
@@ -487,7 +488,7 @@ var KeyboardManager = {
       return;
     }
 
-    this.keyboardFrameManager.uninitFrameByLayout(this.showingLayout.layout);
+    this.keyboardFrameManager.resetFrameByLayout(this.showingLayout.layout);
 
     // XXX: this setup and teardown should be abstracted
     this.showingLayout.type = 'text';

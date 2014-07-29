@@ -37,20 +37,18 @@
     this._keyboardManager.resizeKeyboard(evt);
   };
 
-  KeyboardFrameManager.prototype.initFrame = function kfm_initFrame(frame) {
+  KeyboardFrameManager.prototype.setupFrameByLayout =
+    function kfm_setupFrameByLayout(layout) {
+    var frame = this.runningLayouts[layout.manifestURL][layout.id];
     frame.classList.remove('hide');
     this.setFrameActive(frame, true);
     frame.addEventListener('mozbrowserresize', this, true);
   };
 
-  KeyboardFrameManager.prototype.initFrameByLayout =
-    function kfm_initFrameByLayout(layout) {
-    // console.trace();
+  KeyboardFrameManager.prototype.resetFrameByLayout =
+    function kfm_resetFrameByLayout(layout) {
     var frame = this.runningLayouts[layout.manifestURL][layout.id];
-    this.initFrame(frame);
-  };
 
-  KeyboardFrameManager.prototype.uninitFrame = function kfm_uninitFrame(frame) {
     if (!frame) {
       return;
     }
@@ -58,28 +56,6 @@
     frame.classList.add('hide');
     this.setFrameActive(frame, false);
     frame.removeEventListener('mozbrowserresize', this, true);
-  };
-
-  KeyboardFrameManager.prototype.uninitFrameByLayout =
-    function kfm_uninitFrameByLayout(layout) {
-    var frame = this.runningLayouts[layout.manifestURL][layout.id];
-    this.uninitFrame(frame);
-  };
-
-  // XXX: outside user of this function should be abstracted
-  KeyboardFrameManager.prototype.getFrameByLayout =
-    function kfm_getFrameByLayout(layout) {
-    if (!layout) {
-      return null;
-    }
-    return this.runningLayouts[layout.manifestURL][layout.id];
-  };
-
-  KeyboardFrameManager.prototype.setLayoutFrameActive =
-    function kfm_setLayoutFrameActive(layout, active) {
-    var frame = this.runningLayouts[layout.manifestURL][layout.id];
-
-    this.setFrameActive(frame, active);
   };
 
   KeyboardFrameManager.prototype.setFrameActive =
@@ -100,8 +76,8 @@
   };
 
   // XXX: maybe change name?
-  KeyboardFrameManager.prototype.getNewLayoutFrameFromOldKeyboard = 
-    function kfm_getNewLayoutFrameFromOldKeyboard(layout) {
+  KeyboardFrameManager.prototype.getLayoutFrameFromExistingKeyboard = 
+    function kfm_getLayoutFrameFromExistingKeyboard(layout) {
     var layoutFrame = null;
     var runningKeybaord = this.runningLayouts[layout.manifestURL];
     for (var name in runningKeybaord) {
@@ -121,35 +97,9 @@
     return layoutFrame;
   };
 
-  // XXX: rename this to "initFrameFromLayout"
-  KeyboardFrameManager.prototype.generateLayoutFrame = 
-    function kfm_generateLayoutFrame(layout) {
-
-    var layoutFrame = null;
-    // The layout is in a keyboard app that has been launched.
-    if (this.isRunningKeyboard(layout)) {
-      // Re-use the iframe by changing its src.
-      layoutFrame = this.getNewLayoutFrameFromOldKeyboard(layout);
-    }
-
-    // Can't reuse, so create a new frame to load this new layout.
-    if (!layoutFrame) {
-      layoutFrame = this.loadKeyboardLayout(layout);
-      // TODO make sure setLayoutFrameActive function is ready
-      this.setFrameActive(layoutFrame, false);
-      layoutFrame.classList.add('hide');
-      layoutFrame.dataset.frameManifestURL = layout.manifestURL;
-    }
-
-    layoutFrame.dataset.frameName = layout.id;
-    layoutFrame.dataset.framePath = layout.path;
-
-    return layoutFrame;
-  };
-
-  // XXX: this should be the actual generateLayoutFrame !
-  KeyboardFrameManager.prototype.generateLayoutFrame2 = 
-    function kfm_generateLayoutFrame2(layout) {
+  // XXX: this should be the actual initLayoutFrame !
+  KeyboardFrameManager.prototype.initLayoutFrame = 
+    function kfm_initLayoutFrame(layout) {
 
     // Generate a <iframe mozbrowser> containing the keyboard.
     var keyboard = document.createElement('iframe');
@@ -182,7 +132,23 @@
       return this.runningLayouts[layout.manifestURL][layout.id];
     }
 
-    var layoutFrame = this.generateLayoutFrame(layout);
+    var layoutFrame = null;
+    // The layout is in a keyboard app that has been launched.
+    if (this.isRunningKeyboard(layout)) {
+      // Re-use the iframe by changing its src.
+      layoutFrame = this.getLayoutFrameFromExistingKeyboard(layout);
+    }
+
+    // Can't reuse, so create a new frame to load this new layout.
+    if (!layoutFrame) {
+      layoutFrame = this.loadKeyboardLayoutToFrame(layout);
+      this.setFrameActive(layoutFrame, false);
+      layoutFrame.classList.add('hide');
+      layoutFrame.dataset.frameManifestURL = layout.manifestURL;
+    }
+
+    layoutFrame.dataset.frameName = layout.id;
+    layoutFrame.dataset.framePath = layout.path;
 
     this.insertLayoutFrame(layout, layoutFrame);
     this._keyboardManager.insertRunningLayout(layout);
@@ -200,8 +166,8 @@
     return this.runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
   };
 
-  KeyboardFrameManager.prototype.loadKeyboardLayout = function kfm_loadKeyboardLayout(layout) {
-    var keyboard = this.generateLayoutFrame2(layout);
+  KeyboardFrameManager.prototype.loadKeyboardLayoutToFrame = function kfm_loadKeyboardLayoutToFrame(layout) {
+    var keyboard = this.initLayoutFrame(layout);
     this._keyboardManager.keyboardFrameContainer.appendChild(keyboard);
     return keyboard;
   };
@@ -210,6 +176,7 @@
     delete this.runningLayouts[kbManifestURL];
   };
 
+  // name incorrect
   KeyboardFrameManager.prototype.deleteRunningFrame = function kfm_deleteRunningFrame(kbManifestURL, layoutID) {
     delete this.runningLayouts[kbManifestURL][layoutID];
   };
