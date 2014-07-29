@@ -419,11 +419,11 @@ var KeyboardManager = {
         // if it doesn't work, noone cares
       }
       delete this.runningLayouts[manifestURL][id];
-      delete this.keyboardFrameManager.runningLayouts[manifestURL][id];
+      this.keyboardFrameManager.deleteLayout(manifestURL, id);
     }
 
     delete this.runningLayouts[manifestURL];
-    delete this.keyboardFrameManager.runningLayouts[manifestURL];
+    this.keyboardFrameManager.deleteLayout(manifestURL);
 
     if (handleOOM && revokeShowedType !== null) {
       this.setKeyboardToShow(revokeShowedType);
