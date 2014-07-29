@@ -409,8 +409,6 @@ var KeyboardManager = {
       this.hideKeyboard();
     }
 
-    // XXX delete should go KFM. and abstract.
-
     for (var id in this.keyboardFrameManager.runningLayouts[manifestURL]) {
       var frame = this.keyboardFrameManager.runningLayouts[manifestURL][id];
       try {
@@ -418,11 +416,11 @@ var KeyboardManager = {
       } catch (e) {
         // if it doesn't work, noone cares
       }
-      delete this.runningLayouts[manifestURL][id];
+      this.deleteRunningLayout(manifestURL, id);
       this.keyboardFrameManager.deleteLayout(manifestURL, id);
     }
 
-    delete this.runningLayouts[manifestURL];
+    this.deleteRunningLayout(manifestURL);
     this.keyboardFrameManager.deleteLayout(manifestURL);
 
     if (handleOOM && revokeShowedType !== null) {
@@ -511,6 +509,23 @@ var KeyboardManager = {
 
   hideKeyboardImmediately: function km_hideImmediately() {
     this.transitionManager.hideImmediately();
+  },
+
+  insertRunningLayout: function km_insertRunningLayout(layout) {
+    // XXX: empty string
+    if (!(layout.manifestURL in this.runningLayouts)) {
+      this.runningLayouts[layout.manifestURL] = {};
+    }
+
+    this.runningLayouts[layout.manifestURL][layout.id] = '';
+  },
+
+  deleteRunningLayout: function km_deleteRunningLayout(kbManifestURL, layoutID) {
+    delete this.runningLayouts[manifestURL][id];
+  },
+
+  deleteRunningKeyboard: function km_deleteRunningKeyboard(kbManifestURL) {
+    delete this.runningLayouts[manifestURL];
   },
 
   switchToNext: function km_switchToNext() {

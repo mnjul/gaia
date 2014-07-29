@@ -112,7 +112,7 @@
         layoutFrame = runningKeybaord[name];
         layoutFrame.src = layout.origin + newPath;
         this._debug(name + ' is overwritten: ' + layoutFrame.src);
-        this.deleteLayoutFrame(layout.manifestURL, name);
+        this.deleteRunningFrame(layout.manifestURL, name);
         // XXX: decouple this
         delete this._keyboardManager.runningLayouts[layout.manifestURL][name];
         break;
@@ -143,8 +143,6 @@
 
     layoutFrame.dataset.frameName = layout.id;
     layoutFrame.dataset.framePath = layout.path;
-
-    this.insertLayoutFrame(layout, layoutFrame);
 
     return layoutFrame;
   };
@@ -178,7 +176,6 @@
     return keyboard;
   };
 
-  // XXX: move KM's runningLayouts back to KM
   KeyboardFrameManager.prototype.launchLayoutFrame = function km_launchLayoutFrame(layout) {
     if (this.isRunningLayout(layout)) {
       this._debug('this layout is running');
@@ -187,12 +184,8 @@
 
     var layoutFrame = this.generateLayoutFrame(layout);
 
-    // XXX^
-    if (!(layout.manifestURL in this._keyboardManager.runningLayouts)) {
-      this._keyboardManager.runningLayouts[layout.manifestURL] = {};
-    }
-
-    this._keyboardManager.runningLayouts[layout.manifestURL][layout.id] = '';
+    this.insertLayoutFrame(layout, layoutFrame);
+    this._keyboardManager.insertRunningLayout(layout);
 
     return layoutFrame;
   };
@@ -213,15 +206,15 @@
     return keyboard;
   };
 
-  KeyboardFrameManager.prototype.deleteKeyboard = function kfm_deleteKeyboard(kbManifestURL) {
+  KeyboardFrameManager.prototype.deleteRunningKeyboard = function kfm_deleteRunningKeyboard(kbManifestURL) {
     delete this.runningLayouts[kbManifestURL];
   };
 
-  KeyboardFrameManager.prototype.deleteLayoutFrame = function kfm_deleteLayoutFrame(kbManifestURL, layoutID) {
+  KeyboardFrameManager.prototype.deleteRunningFrame = function kfm_deleteRunningFrame(kbManifestURL, layoutID) {
     delete this.runningLayouts[kbManifestURL][layoutID];
   };
 
-  KeyboardFrameManager.prototype.insertLayoutFrame = function kfm_insertLayout(layout, layoutFrame) {
+  KeyboardFrameManager.prototype.insertLayoutFrame = function kfm_insertLayoutFrame(layout, layoutFrame) {
     if (!(layout.manifestURL in this.runningLayouts)) {
       this.runningLayouts[layout.manifestURL] = {};
     }
