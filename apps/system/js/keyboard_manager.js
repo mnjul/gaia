@@ -372,21 +372,7 @@ var KeyboardManager = {
     // The layout is in a keyboard app that has been launched.
     if (this.isRunningKeyboard(layout)) {
       // Re-use the iframe by changing its src.
-      var runningKeybaord =
-        this.keyboardFrameManager.runningLayouts[layout.manifestURL];
-      for (var name in runningKeybaord) {
-        var oldPath = runningKeybaord[name].dataset.framePath;
-        var newPath = layout.path;
-        if (oldPath.substring(0, oldPath.indexOf('#')) ===
-            newPath.substring(0, newPath.indexOf('#'))) {
-          layoutFrame = runningKeybaord[name];
-          layoutFrame.src = layout.origin + newPath;
-          this._debug(name + ' is overwritten: ' + layoutFrame.src);
-          delete runningKeybaord[name];
-          delete this.runningLayouts[layout.manifestURL][name];
-          break;
-        }
-      }
+      layoutFrame = this.keyboardFrameManager.getNewLayoutFrameFromOldKeyboard(layout);
     }
 
     // Create a new frame to load this new layout.

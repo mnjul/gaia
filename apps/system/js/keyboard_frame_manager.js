@@ -93,8 +93,29 @@
 
     // XXX: decouple this
     this._keyboardManager.hasActiveKeyboard = active;
-  }
+  };
 
+  // XXX: maybe change name?
+  KeyboardFrameManager.prototype.getNewLayoutFrameFromOldKeyboard = 
+    function kfm_getNewLayoutFrameFromOldKeyboard(layout) {
+      var layoutFrame = null;
+      var runningKeybaord = this.runningLayouts[layout.manifestURL];
+      for (var name in runningKeybaord) {
+        var oldPath = runningKeybaord[name].dataset.framePath;
+        var newPath = layout.path;
+        if (oldPath.substring(0, oldPath.indexOf('#')) ===
+            newPath.substring(0, newPath.indexOf('#'))) {
+          layoutFrame = runningKeybaord[name];
+          layoutFrame.src = layout.origin + newPath;
+          this._debug(name + ' is overwritten: ' + layoutFrame.src);
+          delete runningKeybaord[name];
+          // XXX: decouple this
+          delete this._keyboardManager.runningLayouts[layout.manifestURL][name];
+          break;
+        }
+      }
+      return layoutFrame;
+  };
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
 
