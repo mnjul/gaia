@@ -123,14 +123,14 @@
 
     var layoutFrame = null;
     // The layout is in a keyboard app that has been launched.
-    if (this._keyboardManager.isRunningKeyboard(layout)) {
+    if (this.isRunningKeyboard(layout)) {
       // Re-use the iframe by changing its src.
       layoutFrame = this.getNewLayoutFrameFromOldKeyboard(layout);
     }
 
     // Can't reuse, so create a new frame to load this new layout.
     if (!layoutFrame) {
-      layoutFrame = this._keyboardManager.loadKeyboardLayout(layout);
+      layoutFrame = this.loadKeyboardLayout(layout);
       // TODO make sure setLayoutFrameActive function is ready
       this.setFrameActive(layoutFrame, false);
       layoutFrame.classList.add('hide');
@@ -178,6 +178,40 @@
 
     return keyboard;
   };
+
+  // XXX: move KM's runningLayouts back to KM
+  KeyboardFrameManager.prototype.launchLayoutFrame = function km_launchLayoutFrame(layout) {
+    if (this.isRunningLayout(layout)) {
+      this._debug('this layout is running');
+      return this.runningLayouts[layout.manifestURL][layout.id];
+    }
+
+    var layoutFrame = this.generateLayoutFrame(layout);
+
+    if (!(layout.manifestURL in this._keyboardManager.runningLayouts)) {
+      this._keyboardManager.runningLayouts[layout.manifestURL] = {};
+    }
+
+    this._keyboardManager.runningLayouts[layout.manifestURL][layout.id] = '';
+
+    return layoutFrame;
+  },
+
+  KeyboardFrameManager.prototype.isRunningKeyboard = function km_isRunningKeyboard(layout) {
+    return this.runningLayouts.hasOwnProperty(layout.manifestURL);
+  },
+
+  KeyboardFrameManager.prototype.isRunningLayout = function kfm_isRunningLayout(layout) {
+    if (!this.isRunningKeyboard(layout))
+      return false;
+    return this.runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
+  },
+
+  KeyboardFrameManager.prototype.loadKeyboardLayout = function kfm_loadKeyboardLayout(layout) {
+    var keyboard = this.generateLayoutFrame2(layout);
+    this._keyboardManager.keyboardFrameContainer.appendChild(keyboard);
+    return keyboard;
+  },
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
 

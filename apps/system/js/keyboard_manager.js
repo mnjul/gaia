@@ -360,41 +360,6 @@ var KeyboardManager = {
     }
   },
 
-  // XXX: this should be in KFM at all
-  launchLayoutFrame: function km_launchLayoutFrame(layout) {
-    if (this.isRunningLayout(layout)) {
-      this._debug('this layout is running');
-      return this.keyboardFrameManager
-             .runningLayouts[layout.manifestURL][layout.id];
-    }
-
-    var layoutFrame = this.keyboardFrameManager.generateLayoutFrame(layout);
-
-    if (!(layout.manifestURL in this.runningLayouts)) {
-      this.runningLayouts[layout.manifestURL] = {};
-    }
-
-    this.runningLayouts[layout.manifestURL][layout.id] = '';
-
-    return layoutFrame;
-  },
-
-  isRunningKeyboard: function km_isRunningKeyboard(layout) {
-    return this.runningLayouts.hasOwnProperty(layout.manifestURL);
-  },
-
-  isRunningLayout: function km_isRunningLayout(layout) {
-    if (!this.isRunningKeyboard(layout))
-      return false;
-    return this.runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
-  },
-
-  loadKeyboardLayout: function km_loadKeyboardLayout(layout) {
-    var keyboard = this.keyboardFrameManager.generateLayoutFrame2(layout);
-    this.keyboardFrameContainer.appendChild(keyboard);
-    return keyboard;
-  },
-
   handleEvent: function km_handleEvent(evt) {
     var self = this;
     switch (evt.type) {
@@ -447,13 +412,13 @@ var KeyboardManager = {
       return;
     }
 
-    // XXX: get data from KFM module
-    //      but actually use it to do jobs for this module
     if (this.showingLayout.layout &&
       this.showingLayout.layout.manifestURL === manifestURL) {
       revokeShowedType = this.showingLayout.type;
       this.hideKeyboard();
     }
+
+    // XXX delete should go KFM. and abstract.
 
     for (var id in this.keyboardFrameManager.runningLayouts[manifestURL]) {
       var frame = this.keyboardFrameManager.runningLayouts[manifestURL][id];
@@ -490,7 +455,7 @@ var KeyboardManager = {
     // launchLayoutFrame will write into frame manager's data (for now)
     // so no need to get its return value
     // XXX: remove return value for launchLayoutFrame
-    this.launchLayoutFrame(layout);
+    this.keyboardFrameManager.launchLayoutFrame(layout);
     this.showingLayout.layout = layout;
 
     // By setting launchOnly to true, we load the keyboard frame w/o bringing it
@@ -535,6 +500,7 @@ var KeyboardManager = {
 
     this.keyboardFrameManager.uninitFrameByLayout(this.showingLayout.layout);
 
+    // XXX: this setup and teardown should be abstracted
     this.showingLayout.type = 'text';
     this.showingLayout.index = 0;
   },
@@ -560,7 +526,7 @@ var KeyboardManager = {
     clearTimeout(this.switchChangeTimeout);
 
     var showed = this.showingLayout;
-    // XXX: name change
+    // XXX: name change: "showingLayoutInfo" -> layout"
     var oldLayout = showed.layout;
 
     this.switchChangeTimeout = setTimeout(function keyboardSwitchLayout() {
