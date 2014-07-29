@@ -98,23 +98,85 @@
   // XXX: maybe change name?
   KeyboardFrameManager.prototype.getNewLayoutFrameFromOldKeyboard = 
     function kfm_getNewLayoutFrameFromOldKeyboard(layout) {
-      var layoutFrame = null;
-      var runningKeybaord = this.runningLayouts[layout.manifestURL];
-      for (var name in runningKeybaord) {
-        var oldPath = runningKeybaord[name].dataset.framePath;
-        var newPath = layout.path;
-        if (oldPath.substring(0, oldPath.indexOf('#')) ===
-            newPath.substring(0, newPath.indexOf('#'))) {
-          layoutFrame = runningKeybaord[name];
-          layoutFrame.src = layout.origin + newPath;
-          this._debug(name + ' is overwritten: ' + layoutFrame.src);
-          delete runningKeybaord[name];
-          // XXX: decouple this
-          delete this._keyboardManager.runningLayouts[layout.manifestURL][name];
-          break;
-        }
+    var layoutFrame = null;
+    var runningKeybaord = this.runningLayouts[layout.manifestURL];
+    for (var name in runningKeybaord) {
+      var oldPath = runningKeybaord[name].dataset.framePath;
+      var newPath = layout.path;
+      if (oldPath.substring(0, oldPath.indexOf('#')) ===
+          newPath.substring(0, newPath.indexOf('#'))) {
+        layoutFrame = runningKeybaord[name];
+        layoutFrame.src = layout.origin + newPath;
+        this._debug(name + ' is overwritten: ' + layoutFrame.src);
+        delete runningKeybaord[name];
+        // XXX: decouple this
+        delete this._keyboardManager.runningLayouts[layout.manifestURL][name];
+        break;
       }
-      return layoutFrame;
+    }
+    return layoutFrame;
+  };
+
+  // XXX: rename this to "initFrameFromLayout"
+  KeyboardFrameManager.prototype.generateLayoutFrame = 
+    function kfm_generateLayoutFrame(layout) {
+
+    var layoutFrame = null;
+    // The layout is in a keyboard app that has been launched.
+    if (this._keyboardManager.isRunningKeyboard(layout)) {
+      // Re-use the iframe by changing its src.
+      layoutFrame = this.getNewLayoutFrameFromOldKeyboard(layout);
+    }
+
+    // Can't reuse, so create a new frame to load this new layout.
+    if (!layoutFrame) {
+      layoutFrame = this._keyboardManager.loadKeyboardLayout(layout);
+      // TODO make sure setLayoutFrameActive function is ready
+      this.setFrameActive(layoutFrame, false);
+      layoutFrame.classList.add('hide');
+      layoutFrame.dataset.frameManifestURL = layout.manifestURL;
+    }
+
+    layoutFrame.dataset.frameName = layout.id;
+    layoutFrame.dataset.framePath = layout.path;
+
+    if (!(layout.manifestURL in this.runningLayouts)) {
+      this.runningLayouts[layout.manifestURL] = {};
+    }
+
+    this.runningLayouts[layout.manifestURL][layout.id] =
+      layoutFrame;
+
+    return layoutFrame;
+  };
+
+  // XXX: this should be the actual generateLayoutFrame !
+  KeyboardFrameManager.prototype.generateLayoutFrame2 = 
+    function kfm_generateLayoutFrame2(layout) {
+
+    // Generate a <iframe mozbrowser> containing the keyboard.
+    var keyboard = document.createElement('iframe');
+    keyboard.src = layout.origin + layout.path;
+    keyboard.setAttribute('mozapptype', 'inputmethod');
+    keyboard.setAttribute('mozbrowser', 'true');
+    keyboard.setAttribute('mozpasspointerevents', 'true');
+    keyboard.setAttribute('mozapp', layout.manifestURL);
+
+    var manifest =
+      window.applications.getByManifestURL(layout.manifestURL).manifest;
+    var isCertifiedApp = (manifest.type === 'certified');
+
+    // oop is always enabled for non-certified app,
+    // and optionally enabled to certified apps if
+    // available memory is more than 512MB.
+    if (this._keyboardManager.isOutOfProcessEnabled &&
+        (!isCertifiedApp || this._keyboardManager.totalMemory >= 512)) {
+      console.log('=== Enable keyboard: ' + layout.origin + ' run as OOP ===');
+      keyboard.setAttribute('remote', 'true');
+      keyboard.setAttribute('ignoreuserfocus', 'true');
+    }
+
+    return keyboard;
   };
 
   exports.KeyboardFrameManager = KeyboardFrameManager;

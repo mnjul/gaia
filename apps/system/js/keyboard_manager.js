@@ -368,36 +368,13 @@ var KeyboardManager = {
              .runningLayouts[layout.manifestURL][layout.id];
     }
 
-    var layoutFrame = null;
-    // The layout is in a keyboard app that has been launched.
-    if (this.isRunningKeyboard(layout)) {
-      // Re-use the iframe by changing its src.
-      layoutFrame = this.keyboardFrameManager.getNewLayoutFrameFromOldKeyboard(layout);
-    }
-
-    // Create a new frame to load this new layout.
-    if (!layoutFrame) {
-      layoutFrame = this.loadKeyboardLayout(layout);
-      // TODO make sure setLayoutFrameActive function is ready
-      this.keyboardFrameManager.setFrameActive(layoutFrame, false);
-      layoutFrame.classList.add('hide');
-      layoutFrame.dataset.frameManifestURL = layout.manifestURL;
-    }
-
-    layoutFrame.dataset.frameName = layout.id;
-    layoutFrame.dataset.framePath = layout.path;
+    var layoutFrame = this.keyboardFrameManager.generateLayoutFrame(layout);
 
     if (!(layout.manifestURL in this.runningLayouts)) {
       this.runningLayouts[layout.manifestURL] = {};
     }
 
-    if (!(layout.manifestURL in this.keyboardFrameManager.runningLayouts)) {
-      this.keyboardFrameManager.runningLayouts[layout.manifestURL] = {};
-    }
-
     this.runningLayouts[layout.manifestURL][layout.id] = '';
-    this.keyboardFrameManager.runningLayouts[layout.manifestURL][layout.id] =
-      layoutFrame;
 
     return layoutFrame;
   },
@@ -413,28 +390,7 @@ var KeyboardManager = {
   },
 
   loadKeyboardLayout: function km_loadKeyboardLayout(layout) {
-    // Generate a <iframe mozbrowser> containing the keyboard.
-    var keyboard = document.createElement('iframe');
-    keyboard.src = layout.origin + layout.path;
-    keyboard.setAttribute('mozapptype', 'inputmethod');
-    keyboard.setAttribute('mozbrowser', 'true');
-    keyboard.setAttribute('mozpasspointerevents', 'true');
-    keyboard.setAttribute('mozapp', layout.manifestURL);
-
-    var manifest =
-      window.applications.getByManifestURL(layout.manifestURL).manifest;
-    var isCertifiedApp = (manifest.type === 'certified');
-
-    // oop is always enabled for non-certified app,
-    // and optionally enabled to certified apps if
-    // available memory is more than 512MB.
-    if (this.isOutOfProcessEnabled &&
-        (!isCertifiedApp || this.totalMemory >= 512)) {
-      console.log('=== Enable keyboard: ' + layout.origin + ' run as OOP ===');
-      keyboard.setAttribute('remote', 'true');
-      keyboard.setAttribute('ignoreuserfocus', 'true');
-    }
-
+    var keyboard = this.keyboardFrameManager.generateLayoutFrame2(layout);
     this.keyboardFrameContainer.appendChild(keyboard);
     return keyboard;
   },
