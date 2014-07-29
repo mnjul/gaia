@@ -376,10 +376,6 @@ var KeyboardManager = {
   handleEvent: function km_handleEvent(evt) {
     var self = this;
     switch (evt.type) {
-      case 'mozbrowserresize':
-        this.resizeKeyboard(evt);
-
-        break;
       case 'attentionscreenshow':
         // If we call hideKeyboardImmediately synchronously,
         // attention screen will not show up.

@@ -33,10 +33,14 @@
     this._showingFrame = undefined;
   };
 
+  KeyboardFrameManager.prototype.handleEvent = function kfm_handleEvent(evt) {
+    this._keyboardManager.resizeKeyboard(evt);
+  };
+
   KeyboardFrameManager.prototype.initFrame = function kfm_initFrame(frame) {
     frame.classList.remove('hide');
     this.setFrameActive(frame, true);
-    frame.addEventListener('mozbrowserresize', this._keyboardManager, true);
+    frame.addEventListener('mozbrowserresize', this, true);
   };
 
   KeyboardFrameManager.prototype.initFrameByLayout =
@@ -53,7 +57,7 @@
 
     frame.classList.add('hide');
     this.setFrameActive(frame, false);
-    frame.removeEventListener('mozbrowserresize', this._keyboardManager, true);
+    frame.removeEventListener('mozbrowserresize', this, true);
   };
 
   KeyboardFrameManager.prototype.uninitFrameByLayout =
