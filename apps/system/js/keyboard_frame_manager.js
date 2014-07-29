@@ -75,7 +75,6 @@
     this._keyboardManager.hasActiveKeyboard = active;
   };
 
-  // XXX: maybe change name?
   KeyboardFrameManager.prototype.getLayoutFrameFromExistingKeyboard = 
     function kfm_getLayoutFrameFromExistingKeyboard(layout) {
     var layoutFrame = null;
@@ -89,15 +88,13 @@
         layoutFrame.src = layout.origin + newPath;
         this._debug(name + ' is overwritten: ' + layoutFrame.src);
         this.deleteRunningFrame(layout.manifestURL, name);
-        // XXX: decouple this
-        delete this._keyboardManager.runningLayouts[layout.manifestURL][name];
+        this._keyboardManager.deleteRunningLayout(layout.manifestURL, name);
         break;
       }
     }
     return layoutFrame;
   };
 
-  // XXX: this should be the actual initLayoutFrame !
   KeyboardFrameManager.prototype.initLayoutFrame = 
     function kfm_initLayoutFrame(layout) {
 
@@ -152,8 +149,6 @@
 
     this.insertLayoutFrame(layout, layoutFrame);
     this._keyboardManager.insertRunningLayout(layout);
-
-    return layoutFrame;
   };
 
   KeyboardFrameManager.prototype.isRunningKeyboard = function km_isRunningKeyboard(layout) {
@@ -176,7 +171,7 @@
     delete this.runningLayouts[kbManifestURL];
   };
 
-  // name incorrect
+  // XXX: name incorrect
   KeyboardFrameManager.prototype.deleteRunningFrame = function kfm_deleteRunningFrame(kbManifestURL, layoutID) {
     delete this.runningLayouts[kbManifestURL][layoutID];
   };

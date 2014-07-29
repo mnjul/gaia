@@ -325,7 +325,6 @@ var KeyboardManager = {
 
       // We need to reset the previous frame nly when we switch to a new frame
       // this "frame" is decided by manifestURL
-      // XXX: abstract this into KFM
       if (previousLayout &&
           (previousLayout.manifestURL != self.showingLayout.layout.manifestURL || 
           previousLayout.id != self.showingLayout.layout.id)) {
@@ -409,7 +408,7 @@ var KeyboardManager = {
       this.hideKeyboard();
     }
 
-    // XXX this actually deletes
+    // XXX this actually deletes the frame (ref. kfm's 'deleteRunningLayout')
     for (var id in this.keyboardFrameManager.runningLayouts[manifestURL]) {
       var frame = this.keyboardFrameManager.runningLayouts[manifestURL][id];
       try {
@@ -442,9 +441,6 @@ var KeyboardManager = {
     this.showingLayout.index = index;
     var layout = this.keyboardLayouts[group][index];
 
-    // launchLayoutFrame will write into frame manager's data (for now)
-    // so no need to get its return value
-    // XXX: remove return value for launchLayoutFrame
     this.keyboardFrameManager.launchLayoutFrame(layout);
     this.showingLayout.layout = layout;
 
@@ -522,11 +518,11 @@ var KeyboardManager = {
   },
 
   deleteRunningLayout: function km_deleteRunningLayout(kbManifestURL, layoutID) {
-    delete this.runningLayouts[manifestURL][id];
+    delete this.runningLayouts[kbManifestURL][layoutID];
   },
 
   deleteRunningKeyboard: function km_deleteRunningKeyboard(kbManifestURL) {
-    delete this.runningLayouts[manifestURL];
+    delete this.runningLayouts[kbManifestURL];
   },
 
   switchToNext: function km_switchToNext() {
