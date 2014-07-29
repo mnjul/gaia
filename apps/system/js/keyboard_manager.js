@@ -329,11 +329,24 @@ var KeyboardManager = {
       // We need to reset the previous frame nly when we switch to a new frame
       // this "frame" is decided by manifestURL
       // XXX: abstract this into KFM
-      if (self.keyboardFrameManager.getFrameByLayout(previousLayout) &&
+      console.log("Checkpoint, AK: prevousLayout = ", previousLayout);
+      console.log("Checkpoint, AK: showingLayout = ", self.showingLayout.layout);
+      console.log("Checkpoint, AK: getFrameByLayout(prevousLayout) = ", self.keyboardFrameManager.getFrameByLayout(previousLayout));
+      console.log("Checkpoint, AK: getFrameByLayout(showingLayout) = ", self.keyboardFrameManager.getFrameByLayout(self.showingLayout.layout));
+      console.log("Condition layout: ", previousLayout &&
+          previousLayout != self.showingLayout.layout);
+      console.log("Condition gFBL: ", self.keyboardFrameManager.getFrameByLayout(previousLayout) &&
           self.keyboardFrameManager.getFrameByLayout(previousLayout) !=
           self.keyboardFrameManager.getFrameByLayout(
             self.showingLayout.layout
-         )) {
+         ));
+      console.log("Condition layout2: ", previousLayout &&
+          (previousLayout.manifestURL != self.showingLayout.layout.manifestURL || 
+          previousLayout.id != self.showingLayout.layout.id));
+
+      if (previousLayout &&
+          (previousLayout.manifestURL != self.showingLayout.layout.manifestURL || 
+          previousLayout.id != self.showingLayout.layout.id)) {
         self._debug('reset previousFrame.');
         self.keyboardFrameManager.uninitFrameByLayout(previousLayout);
       }
