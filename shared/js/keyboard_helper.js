@@ -161,7 +161,6 @@ function kh_loadedSetting(setting) {
   loadedSettings.add(setting);
   if (loadedSettings.size >= Object.keys(SETTINGS_KEYS).length) {
     waitingForSettings.forEach(function(callback) {
-      console.log(callback);
       callback();
     });
     waitingForSettings = [];
