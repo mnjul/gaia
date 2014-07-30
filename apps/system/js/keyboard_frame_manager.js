@@ -164,7 +164,7 @@
 
   KeyboardFrameManager.prototype.destroyFrame =
     function kfm_destroyFrame(kbManifestURL, layoutID) {
-    var frame = this._runningLayouts[manifestURL][id];
+    var frame = this._runningLayouts[kbManifestURL][layoutID];
     try {
       frame.parentNode.removeChild(frame);
     } catch (e) {
@@ -198,8 +198,9 @@
 
   KeyboardFrameManager.prototype._isRunningLayout =
     function kfm__isRunningLayout(layout) {
-    if (!this._isRunningKeyboard(layout))
+    if (!this._isRunningKeyboard(layout)) {
       return false;
+    }
     return this._runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
   };
 
