@@ -330,7 +330,7 @@ var KeyboardManager = {
           (previousLayout.manifestURL != self.showingLayoutInfo.layout.manifestURL || 
           previousLayout.id != self.showingLayoutInfo.layout.id)) {
         self._debug('reset previousFrame.');
-        self.keyboardFrameManager.resetFrameByLayout(previousLayout);
+        self.keyboardFrameManager.resetFrame(previousLayout);
       }
     }
 
@@ -433,7 +433,8 @@ var KeyboardManager = {
     }
     this._debug('set layout to display: type=' + group + ' index=' + index);
     var layout = this.keyboardLayouts[group][index];
-    this.keyboardFrameManager.launchLayoutFrame(layout);
+    this.keyboardFrameManager.launchFrame(layout);
+    this.insertRunningLayout(layout);
     this.setShowingLayoutInfo(group, index, layout);
 
     // By setting launchOnly to true, we load the keyboard frame w/o bringing it
@@ -450,7 +451,7 @@ var KeyboardManager = {
       this.transitionManager.handleResize(this.showingLayoutInfo.height);
     }
 
-    this.keyboardFrameManager.setupFrameByLayout(layout);
+    this.keyboardFrameManager.setupFrame(layout);
   },
 
   /**
@@ -478,7 +479,7 @@ var KeyboardManager = {
       return;
     }
 
-    this.keyboardFrameManager.resetFrameByLayout(this.showingLayoutInfo.layout);
+    this.keyboardFrameManager.resetFrame(this.showingLayoutInfo.layout);
 
     this.resetShowingLayoutInfo();
   },
