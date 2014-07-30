@@ -5,7 +5,7 @@
   /**
    * KeyboardFrameManager manages all the iframe-related operations that
    * has to do with keyboard layouts. It receives a layout from KeyboardManager
-   * and performs operations on the iframe associated with the layout (such that)
+   * and performs operations on the iframe associated with the layout, such that
    * KeyboardManager does not have to be concerned about the inner mechanisms
    * of a keyboard iframe.
    */
@@ -27,7 +27,7 @@
     if (this._onDebug) {
       console.log('[Keyboard Manager] ' + msg);
     }
-  },
+  };
 
   KeyboardFrameManager.prototype.start = function kfm_start() {
 
@@ -82,7 +82,7 @@
     this._keyboardManager.setHasActiveKeyboard(active);
   };
 
-  KeyboardFrameManager.prototype.getLayoutFrameFromExistingKeyboard = 
+  KeyboardFrameManager.prototype.getLayoutFrameFromExistingKeyboard =
     function kfm_getLayoutFrameFromExistingKeyboard(layout) {
     var layoutFrame = null;
     var runningKeybaord = this.runningLayouts[layout.manifestURL];
@@ -102,7 +102,7 @@
     return layoutFrame;
   };
 
-  KeyboardFrameManager.prototype.initLayoutFrame = 
+  KeyboardFrameManager.prototype.initLayoutFrame =
     function kfm_initLayoutFrame(layout) {
 
     // Generate a <iframe mozbrowser> containing the keyboard.
@@ -130,7 +130,8 @@
     return keyboard;
   };
 
-  KeyboardFrameManager.prototype.launchLayoutFrame = function km_launchLayoutFrame(layout) {
+  KeyboardFrameManager.prototype.launchLayoutFrame =
+    function km_launchLayoutFrame(layout) {
     if (this.isRunningLayout(layout)) {
       this._debug('this layout is running');
       return this.runningLayouts[layout.manifestURL][layout.id];
@@ -158,31 +159,37 @@
     this._keyboardManager.insertRunningLayout(layout);
   };
 
-  KeyboardFrameManager.prototype.isRunningKeyboard = function km_isRunningKeyboard(layout) {
+  KeyboardFrameManager.prototype.isRunningKeyboard =
+    function km_isRunningKeyboard(layout) {
     return this.runningLayouts.hasOwnProperty(layout.manifestURL);
   };
 
-  KeyboardFrameManager.prototype.isRunningLayout = function kfm_isRunningLayout(layout) {
+  KeyboardFrameManager.prototype.isRunningLayout =
+    function kfm_isRunningLayout(layout) {
     if (!this.isRunningKeyboard(layout))
       return false;
     return this.runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
   };
 
-  KeyboardFrameManager.prototype.loadKeyboardLayoutToFrame = function kfm_loadKeyboardLayoutToFrame(layout) {
+  KeyboardFrameManager.prototype.loadKeyboardLayoutToFrame =
+    function kfm_loadKeyboardLayoutToFrame(layout) {
     var keyboard = this.initLayoutFrame(layout);
     this._keyboardManager.keyboardFrameContainer.appendChild(keyboard);
     return keyboard;
   };
 
-  KeyboardFrameManager.prototype.deleteRunningKeyboardRef = function kfm_deleteRunningKeyboardRef(kbManifestURL) {
+  KeyboardFrameManager.prototype.deleteRunningKeyboardRef =
+    function kfm_deleteRunningKeyboardRef(kbManifestURL) {
     delete this.runningLayouts[kbManifestURL];
   };
 
-  KeyboardFrameManager.prototype.deleteRunningFrameRef = function kfm_deleteRunningLayoutRef(kbManifestURL, layoutID) {
+  KeyboardFrameManager.prototype.deleteRunningFrameRef =
+    function kfm_deleteRunningLayoutRef(kbManifestURL, layoutID) {
     delete this.runningLayouts[kbManifestURL][layoutID];
   };
 
-  KeyboardFrameManager.prototype.insertLayoutFrame = function kfm_insertLayoutFrame(layout, layoutFrame) {
+  KeyboardFrameManager.prototype.insertLayoutFrame =
+    function kfm_insertLayoutFrame(layout, layoutFrame) {
     if (!(layout.manifestURL in this.runningLayouts)) {
       this.runningLayouts[layout.manifestURL] = {};
     }
@@ -190,7 +197,8 @@
     this.runningLayouts[layout.manifestURL][layout.id] = layoutFrame;
   };
 
-  KeyboardFrameManager.prototype.destroyFrame = function kfm_destroyFrame(kbManifestURL, layoutID) {
+  KeyboardFrameManager.prototype.destroyFrame =
+    function kfm_destroyFrame(kbManifestURL, layoutID) {
     var frame = this.runningLayouts[manifestURL][id];
     try {
       frame.parentNode.removeChild(frame);
