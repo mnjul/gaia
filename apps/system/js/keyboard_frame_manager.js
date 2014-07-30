@@ -51,6 +51,10 @@
 
   KeyboardFrameManager.prototype.resetFrameByLayout =
     function kfm_resetFrameByLayout(layout) {
+    if (!layout) {
+      return;
+    }
+
     var frame = this.runningLayouts[layout.manifestURL][layout.id];
 
     if (!frame) {
@@ -184,6 +188,15 @@
     }
 
     this.runningLayouts[layout.manifestURL][layout.id] = layoutFrame;
+  };
+
+  KeyboardFrameManager.prototype.destroyFrame = function kfm_destroyFrame(kbManifestURL, layoutID) {
+    var frame = this.runningLayouts[manifestURL][id];
+    try {
+      frame.parentNode.removeChild(frame);
+    } catch (e) {
+      // if it doesn't work, noone cares
+    }
   };
 
   exports.KeyboardFrameManager = KeyboardFrameManager;
