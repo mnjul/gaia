@@ -409,6 +409,7 @@ var KeyboardManager = {
     }
 
     // XXX this actually deletes the frame (ref. kfm's 'deleteRunningLayout')
+    // XXX: don't poke into kfm's runninglayouts
     for (var id in this.keyboardFrameManager.runningLayouts[manifestURL]) {
       var frame = this.keyboardFrameManager.runningLayouts[manifestURL][id];
       try {
@@ -417,11 +418,11 @@ var KeyboardManager = {
         // if it doesn't work, noone cares
       }
       this.deleteRunningLayout(manifestURL, id);
-      this.keyboardFrameManager.deleteRunningLayout(manifestURL, id);
+      this.keyboardFrameManager.deleteRunningFrameRef(manifestURL, id);
     }
 
     this.deleteRunningKeyboard(manifestURL);
-    this.keyboardFrameManager.deleteRunningKeyboard(manifestURL);
+    this.keyboardFrameManager.deleteRunningKeyboardRef(manifestURL);
 
     if (handleOOM && revokeShowedType !== null) {
       this.setKeyboardToShow(revokeShowedType);
@@ -506,6 +507,10 @@ var KeyboardManager = {
 
   hideKeyboardImmediately: function km_hideImmediately() {
     this.transitionManager.hideImmediately();
+  },
+
+  setHasActiveKeyboard: function km_setHasActiveKeyboard(active) {
+    this.hasActiveKeyboard = active;
   },
 
   insertRunningLayout: function km_insertRunningLayout(layout) {

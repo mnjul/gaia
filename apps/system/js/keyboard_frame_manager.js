@@ -3,7 +3,11 @@
 (function(exports) {
 
   /**
-   * KeyboardFrameManager
+   * KeyboardFrameManager manages all the iframe-related operations that
+   * has to do with keyboard layouts. It receives a layout from KeyboardManager
+   * and performs operations on the iframe associated with the layout (such that)
+   * KeyboardManager does not have to be concerned about the inner mechanisms
+   * of a keyboard iframe.
    */
   var KeyboardFrameManager = function(keyboardManager) {
     this._keyboardManager = keyboardManager;
@@ -30,7 +34,7 @@
   };
 
   KeyboardFrameManager.prototype.stop = function kfm_stop() {
-    this._showingFrame = undefined;
+
   };
 
   KeyboardFrameManager.prototype.handleEvent = function kfm_handleEvent(evt) {
@@ -71,8 +75,7 @@
       frame.setInputMethodActive(active);
     }
 
-    // XXX: decouple this
-    this._keyboardManager.hasActiveKeyboard = active;
+    this._keyboardManager.setHasActiveKeyboard(active);
   };
 
   KeyboardFrameManager.prototype.getLayoutFrameFromExistingKeyboard = 
@@ -87,7 +90,7 @@
         layoutFrame = runningKeybaord[name];
         layoutFrame.src = layout.origin + newPath;
         this._debug(name + ' is overwritten: ' + layoutFrame.src);
-        this.deleteRunningFrame(layout.manifestURL, name);
+        this.deleteRunningFrameRef(layout.manifestURL, name);
         this._keyboardManager.deleteRunningLayout(layout.manifestURL, name);
         break;
       }
@@ -167,12 +170,11 @@
     return keyboard;
   };
 
-  KeyboardFrameManager.prototype.deleteRunningKeyboard = function kfm_deleteRunningKeyboard(kbManifestURL) {
+  KeyboardFrameManager.prototype.deleteRunningKeyboardRef = function kfm_deleteRunningKeyboardRef(kbManifestURL) {
     delete this.runningLayouts[kbManifestURL];
   };
 
-  // XXX: name incorrect
-  KeyboardFrameManager.prototype.deleteRunningFrame = function kfm_deleteRunningFrame(kbManifestURL, layoutID) {
+  KeyboardFrameManager.prototype.deleteRunningFrameRef = function kfm_deleteRunningLayoutRef(kbManifestURL, layoutID) {
     delete this.runningLayouts[kbManifestURL][layoutID];
   };
 
