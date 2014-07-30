@@ -80,8 +80,7 @@
     this._keyboardManager.setHasActiveKeyboard(active);
   };
 
-  KeyboardFrameManager.prototype.launchFrame =
-    function km_launchFrame(layout) {
+  KeyboardFrameManager.prototype.launchFrame = function km_launchFrame(layout) {
     if (this._isRunningLayout(layout)) {
       this._debug('this layout is running');
       return this._runningLayouts[layout.manifestURL][layout.id];
