@@ -367,8 +367,8 @@ function updateCurrentLayout(name) {
       l10nLoader.load();
     }
   }, function(error) {
-    console.warn('Failed to switch layout for ' + name + '.' +
-      ' It might possible because we were called more than once.');
+    /*console.warn('Failed to switch layout for ' + name + '.' +
+      ' It might possible because we were called more than once.'); */
   });
 }
 
@@ -1649,8 +1649,8 @@ function switchIMEngine(layoutName, mustRender) {
     // Load l10n library after IMEngine is loaded (if it's not loaded yet).
     l10nLoader.load();
   }, function() {
-    console.warn('Failed to switch imEngine for ' + layoutName + '.' +
-      ' It might possible because we were called more than once.');
+    /*console.warn('Failed to switch imEngine for ' + layoutName + '.' +
+      ' It might possible because we were called more than once.'); */
   });
 }
 

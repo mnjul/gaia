@@ -205,9 +205,9 @@ LayoutManager.prototype.switchCurrentLayout = function(layoutName) {
 
   var p = loaderPromise.then(function(layout) {
     if (switchStateId !== this._switchStateId) {
-      console.log('LayoutManager: ' +
+      /*console.log('LayoutManager: ' +
         'Promise is resolved after another switchCurrentLayout() call. ' +
-        'Reject the promise instead.');
+        'Reject the promise instead.'); */
 
       return Promise.reject(new Error(
         'LayoutManager: switchCurrentLayout() is called again before ' +

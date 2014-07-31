@@ -308,13 +308,13 @@ InputMethodManager.prototype.switchCurrentIMEngine = function(imEngineName,
 
   var p = Promise.all([loaderPromise, dataPromise]).then(function(values) {
     if (switchStateId !== this._switchStateId) {
-      console.log('InputMethodManager: ' +
+      /*console.log('InputMethodManager: ' +
         'Promise is resolved after another switchCurrentIMEngine() call. ' +
-        'Reject the promise instead.');
+        'Reject the promise instead.'); */
 
-      return Promise.reject(new Error(
+      return Promise.reject(/*new Error(
         'InputMethodManager: switchCurrentIMEngine() is called again before ' +
-        'resolving.'));
+        'resolving.')*/);
     }
 
     var imEngine = values[0];
