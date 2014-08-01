@@ -686,6 +686,54 @@ var KeyboardManager = {
       frame.setInputMethodActive(active);
     }
     this.hasActiveKeyboard = active;
+  },
+
+  flipFramesActive: function km_flipFrameActive() {
+    var MANIPULATE_VISIBILITY = false;
+
+    var manifestBuiltIn = 'app://keyboard.gaiamobile.org/manifest.webapp';
+    var manifestDemo = 'app://demo-keyboard.gaiamobile.org/manifest.webapp';
+    var frameBuiltIn = this.runningLayouts[manifestBuiltIn]['en'];
+    var frameDemo = this.runningLayouts[manifestDemo]['en'];
+
+    console.log(new Date());
+
+    if (MANIPULATE_VISIBILITY) {
+      frameBuiltIn.classList.add('hide');
+      frameBuiltIn.setVisible(false);
+    }
+    var reqBuiltIn = frameBuiltIn.setInputMethodActive(false);
+
+    if (MANIPULATE_VISIBILITY) {
+      frameDemo.classList.remove('hide');
+      frameDemo.setVisible(true);
+    }
+    var reqDemo = frameDemo.setInputMethodActive(true);
+
+    var promiseBuiltIn = new Promise(function(resolve) {
+      reqBuiltIn.onsuccess = function() {
+        resolve();
+      };
+    });
+    var promiseDemo = new Promise(function(resolve) {
+      reqDemo.onsuccess = function() {
+        setTimeout(function() {
+          if (MANIPULATE_VISIBILITY) {
+            frameDemo.classList.add('hide');
+            frameDemo.setVisible(false);
+          }
+          frameDemo.setInputMethodActive(false);
+          resolve();
+        }, 800);
+      };
+    });
+    Promise.all([promiseBuiltIn, promiseDemo]).then(function() {
+      if (MANIPULATE_VISIBILITY) {
+        frameBuiltIn.classList.remove('hide');
+        frameBuiltIn.setVisible(true);
+      }
+      frameBuiltIn.setInputMethodActive(true);
+    });
   }
 };
 

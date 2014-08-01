@@ -61,6 +61,13 @@ StateManager.prototype.handleEvent = function(evt) {
       break;
 
     case 'inputcontextchange':
+      if (navigator.mozInputMethod.inputcontext) {
+        navigator.mozInputMethod.inputcontext.getText().then(function(v) {
+          console.log('success: ', v, new Date());
+        }, function(e) {
+          console.log('error: ', e, new Date());
+        });
+      }
       this.app.setInputContext(navigator.mozInputMethod.inputcontext);
 
       break;
