@@ -22,7 +22,7 @@ const TYPE_GROUP_MAPPING = {
   'password': 'text',
   'search': 'text',
   // number
-  'number': 'number',
+  'number': 'number2',
   'tel': 'number',
   // option
   'select-one': 'option',
