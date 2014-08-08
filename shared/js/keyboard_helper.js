@@ -689,6 +689,13 @@ var KeyboardHelper = exports.KeyboardHelper = {
     }
 
     function withApps(apps) {
+      // we'll delete keys in this active copy (= the purpose of copying)
+      var fallbackLayoutNames = {};
+      for (var group in this.fallbackLayoutNames){
+        fallbackLayoutNames[group] = this.fallbackLayoutNames[group];
+      }
+      this.fallbackLayouts = {};
+
       var layouts = apps.reduce(function eachApp(result, app) {
 
         var manifest = new ManifestHelper(app.manifest);
@@ -710,10 +717,10 @@ var KeyboardHelper = exports.KeyboardHelper = {
           // and enabledness
           // XXX: we only do this for built-in keyboard?
           if (app.manifestURL === defaultKeyboardManifestURL) {
-            for (var group in this.fallbackLayoutNames) {
-              if (layoutId === this.fallbackLayoutNames[group]) {
+            for (var group in fallbackLayoutNames) {
+              if (layoutId === fallbackLayoutNames[group]) {
                 this.fallbackLayouts[group] = layout;
-                delete this.fallbackLayoutNames[group];
+                delete fallbackLayoutNames[group];
               }
             }
           }
