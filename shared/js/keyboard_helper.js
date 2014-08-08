@@ -58,13 +58,6 @@ var MULTI_LAYOUT_MAP = {
 var defaultKeyboardManifestURL =
   'app://keyboard.gaiamobile.org/manifest.webapp';
 
-// bug 1035117: define the fallback layout for a group if no layout has been
-// selected for that group (if it's not enforced in settings)
-// please see the bug and its related UX spec for the sense of 'fallback'
-var fallbackLayoutNames = {
-  password: 'en'
-};
-
 // Stores a local copy of whatever is in the settings database
 var currentSettings = {
   defaultLayouts: {}
@@ -472,6 +465,13 @@ Object.defineProperties(kh_SettingsHelper, {
 var KeyboardHelper = exports.KeyboardHelper = {
   settings: kh_SettingsHelper,
 
+  // bug 1035117: define the fallback layout for a group if no layout has been
+  // selected for that group (if it's not enforced in settings)
+  // please see the bug and its related UX spec for the sense of 'fallback'
+  fallbackLayoutNames: {
+    password: 'en'
+  },
+
   fallbackLayouts: {},
 
   /**
@@ -710,10 +710,10 @@ var KeyboardHelper = exports.KeyboardHelper = {
           // and enabledness
           // XXX: we only do this for built-in keyboard?
           if (app.manifestURL === defaultKeyboardManifestURL) {
-            for (var group in fallbackLayoutNames) {
-              if (layoutId === fallbackLayoutNames[group]) {
+            for (var group in this.fallbackLayoutNames) {
+              if (layoutId === this.fallbackLayoutNames[group]) {
                 this.fallbackLayouts[group] = layout;
-                delete fallbackLayoutNames[group];
+                delete this.fallbackLayoutNames[group];
               }
             }
           }
