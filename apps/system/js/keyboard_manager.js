@@ -327,9 +327,9 @@ var KeyboardManager = {
       // We need to reset the previous frame nly when we switch to a new frame
       // this "frame" is decided by layout properties
       if (previousLayout &&
-          (previousLayout.manifestURL !=
+          (previousLayout.manifestURL !==
            self.showingLayoutInfo.layout.manifestURL ||
-           previousLayout.id != self.showingLayoutInfo.layout.id)
+           previousLayout.id !== self.showingLayoutInfo.layout.id)
          ) {
         self._debug('reset previousFrame.');
         self.inputFrameManager.resetFrame(previousLayout);
