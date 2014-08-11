@@ -6,6 +6,8 @@
   };
 
   MockInputFrameManager.prototype = {
+    runningLayouts: {},
+
     start: function mifm_start() {
     },
 
@@ -27,10 +29,14 @@
     destroyFrame: function mifm_destroyFrame() {
     },
 
-    deleteRunningKeyboardRef: function mifm_deleteRunningKeyboardRef() {
+    deleteRunningKeyboardRef:
+    function mifm_deleteRunningKeyboardRef(manifestURL) {
+      delete this.runningLayouts[manifestURL];
     },
 
-    deleteRunningFrameRef: function mifm_deleteRunningFrameRef() {
+    deleteRunningFrameRef:
+    function mifm_deleteRunningFrameRef(manifestURL, id) {
+      delete this.runningLayouts[manifestURL][id];
     }
 
   };

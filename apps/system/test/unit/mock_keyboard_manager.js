@@ -10,7 +10,6 @@ MockKeyboardManager = {
   },
   isOutOfProcessEnabled: false,
   totalMemory: 0,
-  deleteRunningLayout: function() {},
   keyboardFrameContainer: null,
   resizeKeyboard: function() {},
   setHasActiveKeyboard: function() {}

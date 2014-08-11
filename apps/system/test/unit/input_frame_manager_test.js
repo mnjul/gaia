@@ -47,8 +47,8 @@ suite('InputFrameManager', function() {
       };
 
       inputFrameManager = new InputFrameManager(MockKeyboardManager);
-      inputFrameManager._runningLayouts[layout.manifestURL] = {};
-      inputFrameManager._runningLayouts[layout.manifestURL][layout.id] =
+      inputFrameManager.runningLayouts[layout.manifestURL] = {};
+      inputFrameManager.runningLayouts[layout.manifestURL][layout.id] =
         frame;
 
       stubSetFrameActive = sinon.stub(inputFrameManager, '_setFrameActive');
@@ -257,8 +257,8 @@ suite('InputFrameManager', function() {
       }
     };
 
-    inputFrameManager._runningLayouts[layout.manifestURL] = {};
-    inputFrameManager._runningLayouts[layout.manifestURL][layout.id] = frame;
+    inputFrameManager.runningLayouts[layout.manifestURL] = {};
+    inputFrameManager.runningLayouts[layout.manifestURL][layout.id] = frame;
 
     inputFrameManager.destroyFrame(layout.manifestURL, layout.id);
 
@@ -385,24 +385,18 @@ suite('InputFrameManager', function() {
           framePath: newLayout.path
         }
       };
-      inputFrameManager._runningLayouts[newLayout.manifestURL] = {};
+      inputFrameManager.runningLayouts[newLayout.manifestURL] = {};
       inputFrameManager
-      ._runningLayouts[newLayout.manifestURL][newLayout.id] = frame;
+      .runningLayouts[newLayout.manifestURL][newLayout.id] = frame;
 
       var stubFrameManagerDelete =
         this.sinon.stub(inputFrameManager, 'deleteRunningFrameRef');
-      var stubKBManagerDelete =
-        this.sinon.stub(inputFrameManager._keyboardManager,
-                        'deleteRunningLayout');
       var f = inputFrameManager._getFrameFromExistingKeyboard(newLayout);
 
       assert.equal(f, frame);
       assert.equal(f.src, newLayout.origin + newLayout.path);
       assert.isTrue(
         stubFrameManagerDelete.calledWith(newLayout.manifestURL, newLayout.id)
-      );
-      assert.isTrue(
-        stubKBManagerDelete.calledWith(newLayout.manifestURL, newLayout.id)
       );
     });
     test('didn\'t find existing keyboard to use', function(){
@@ -418,20 +412,17 @@ suite('InputFrameManager', function() {
         }
       };
 
-      inputFrameManager._runningLayouts[oldLayout.manifestURL] = {};
+      inputFrameManager.runningLayouts[oldLayout.manifestURL] = {};
       inputFrameManager
-      ._runningLayouts[oldLayout.manifestURL][oldLayout.id] = frame;
+      .runningLayouts[oldLayout.manifestURL][oldLayout.id] = frame;
 
       var stubFrameManagerDelete =
         this.sinon.stub(inputFrameManager, 'deleteRunningFrameRef');
-      var stubKBManagerDelete =
-        this.sinon.stub(MockKeyboardManager, 'deleteRunningLayout');
 
       var f = inputFrameManager._getFrameFromExistingKeyboard(newLayout);
 
       assert.strictEqual(f, null);
       assert.isFalse(stubFrameManagerDelete.called);
-      assert.isFalse(stubKBManagerDelete.called);
     });
   });
 
@@ -449,14 +440,14 @@ suite('InputFrameManager', function() {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'fr'
       };
-      inputFrameManager._runningLayouts[layout.manifestURL] = {};
+      inputFrameManager.runningLayouts[layout.manifestURL] = {};
       inputFrameManager
-      ._runningLayouts[layout.manifestURL][layout.id] = 'dummy';
+      .runningLayouts[layout.manifestURL][layout.id] = 'dummy';
 
       inputFrameManager._insertFrameRef(layout2, 'frame2');
 
       assert.equal(
-        inputFrameManager._runningLayouts[layout2.manifestURL][layout2.id],
+        inputFrameManager.runningLayouts[layout2.manifestURL][layout2.id],
         'frame2'
       );
     });
@@ -468,7 +459,7 @@ suite('InputFrameManager', function() {
       inputFrameManager._insertFrameRef(layout, 'frame');
 
       assert.equal(
-        inputFrameManager._runningLayouts[layout.manifestURL][layout.id],
+        inputFrameManager.runningLayouts[layout.manifestURL][layout.id],
         'frame'
       );
     });
@@ -479,14 +470,14 @@ suite('InputFrameManager', function() {
       };
       inputFrameManager.runningLayouts = {};
 
-      inputFrameManager._runningLayouts[layout.manifestURL] = {};
-      inputFrameManager._runningLayouts[layout.manifestURL][layout.id] =
+      inputFrameManager.runningLayouts[layout.manifestURL] = {};
+      inputFrameManager.runningLayouts[layout.manifestURL][layout.id] =
         'dummy';
 
       inputFrameManager.deleteRunningFrameRef(layout.manifestURL, layout.id);
 
       assert.isFalse(
-        inputFrameManager._runningLayouts[layout.manifestURL]
+        inputFrameManager.runningLayouts[layout.manifestURL]
         .hasOwnProperty(layout.id)
       );
     });
@@ -495,14 +486,14 @@ suite('InputFrameManager', function() {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'en'
       };
-      inputFrameManager._runningLayouts = {};
+      inputFrameManager.runningLayouts = {};
 
-      inputFrameManager._runningLayouts[layout.manifestURL] = {};
+      inputFrameManager.runningLayouts[layout.manifestURL] = {};
 
       inputFrameManager.deleteRunningKeyboardRef(layout.manifestURL);
 
       assert.isFalse(
-        inputFrameManager._runningLayouts.hasOwnProperty(layout.manifestURL)
+        inputFrameManager.runningLayouts.hasOwnProperty(layout.manifestURL)
       );
     });
   });

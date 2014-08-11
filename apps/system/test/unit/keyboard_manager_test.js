@@ -300,29 +300,34 @@ suite('KeyboardManager', function() {
       fakeFrame_B = {
         manifestURL: 'app://keyboard-test.gaiamobile.org/manifest.webapp',
         id: 'en'};
+      KeyboardManager.inputFrameManager.runningLayouts = {};
     });
 
     test('Not exist in runningLayouts', function() {
-      KeyboardManager.runningLayouts[fakeFrame_A.manifestURL] = Set();
-      KeyboardManager.runningLayouts[fakeFrame_A.manifestURL].add(
-        fakeFrame_A.id
-      );
+      KeyboardManager.inputFrameManager
+        .runningLayouts[fakeFrame_A.manifestURL] = {};
+      KeyboardManager.inputFrameManager
+        .runningLayouts[fakeFrame_A.manifestURL][fakeFrame_A.id] = 'dummy';
       KeyboardManager.removeKeyboard(fakeFrame_B.manifestURL);
       assert.equal(
-        KeyboardManager.runningLayouts.hasOwnProperty(fakeFrame_A.manifestURL),
+        KeyboardManager.inputFrameManager.runningLayouts.hasOwnProperty(
+          fakeFrame_A.manifestURL
+        ),
         true);
     });
 
     test('Not in showingLayoutInfo', function() {
       var hideKeyboard = this.sinon.stub(KeyboardManager, 'hideKeyboard');
-      KeyboardManager.runningLayouts[fakeFrame_B.manifestURL] = Set();
-      KeyboardManager.runningLayouts[fakeFrame_B.manifestURL].add(
-        fakeFrame_B.id
-      );
+      KeyboardManager.inputFrameManager
+        .runningLayouts[fakeFrame_B.manifestURL] = {};
+      KeyboardManager.inputFrameManager
+        .runningLayouts[fakeFrame_B.manifestURL][fakeFrame_B.id] = 'dummy';
       KeyboardManager.removeKeyboard(fakeFrame_B.manifestURL);
       sinon.assert.callCount(hideKeyboard, 0);
       assert.equal(
-        KeyboardManager.runningLayouts.hasOwnProperty(fakeFrame_B.manifestURL),
+        KeyboardManager.inputFrameManager.runningLayouts.hasOwnProperty(
+          fakeFrame_B.manifestURL
+        ),
         false);
     });
 
@@ -330,10 +335,10 @@ suite('KeyboardManager', function() {
       var hideKeyboard = this.sinon.stub(KeyboardManager, 'hideKeyboard');
       var setKeyboardToShow =
                           this.sinon.stub(KeyboardManager, 'setKeyboardToShow');
-      KeyboardManager.runningLayouts[fakeFrame_A.manifestURL] = Set();
-      KeyboardManager.runningLayouts[fakeFrame_A.manifestURL].add(
-        fakeFrame_A.id
-      );
+      KeyboardManager.inputFrameManager
+        .runningLayouts[fakeFrame_A.manifestURL] = {};
+      KeyboardManager.inputFrameManager
+        .runningLayouts[fakeFrame_A.manifestURL][fakeFrame_A.id] = 'dummy';
       var fakeFrame = document.createElement('div');
       fakeFrame.dataset.frameManifestURL =
         'app://keyboard.gaiamobile.org/manifest.webapp';
@@ -343,7 +348,9 @@ suite('KeyboardManager', function() {
       sinon.assert.callCount(hideKeyboard, 1);
       assert.ok(setKeyboardToShow.calledWith('text'));
       assert.equal(
-        KeyboardManager.runningLayouts.hasOwnProperty(fakeFrame_A.manifestURL),
+        KeyboardManager.inputFrameManager.runningLayouts.hasOwnProperty(
+          fakeFrame_A.manifestURL
+        ),
         false);
     });
   });
@@ -650,6 +657,12 @@ suite('KeyboardManager', function() {
   suite('Focus and Blur', function() {
     var imeSwitcherHide;
     setup(function() {
+      // prevent setKeyboardToShow callCount miscalculation
+      // due to launch on boot
+      KeyboardManager.inputFrameManager.runningLayouts[
+        'app://keyboard.gaiamobile.org/manifest.webapp'
+      ] = {};
+
       this.sinon.stub(KeyboardManager, 'hideKeyboard');
       this.sinon.stub(KeyboardManager, 'setKeyboardToShow');
       this.sinon.stub(KeyboardManager, 'showIMESwitcher');
@@ -713,85 +726,6 @@ suite('KeyboardManager', function() {
 
     KeyboardManager.showingLayoutInfo = oldShowingLayoutInfo;
     KeyboardManager.keyboardLayouts = oldKeyboardLayouts;
-  });
-
-  suite('runningLayouts helpers', function() {
-    var runningLayouts;
-    setup(function() {
-      runningLayouts = KeyboardManager.runningLayouts;
-    });
-    teardown(function() {
-      KeyboardManager.runningLayouts = runningLayouts;
-    });
-    test('insertRunningLayout: existing manifest', function(){
-      var layout = {
-        manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
-        id: 'en'
-      };
-      var layout2 = {
-        manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
-        id: 'fr'
-      };
-      KeyboardManager.runningLayouts = {};
-      KeyboardManager.runningLayouts[layout.manifestURL] = Set();
-      KeyboardManager.runningLayouts[layout.manifestURL].add(layout.id);
-
-      KeyboardManager.insertRunningLayout(layout2);
-
-      assert.isTrue(
-        KeyboardManager.runningLayouts[layout.manifestURL].has('en')
-      );
-      assert.isTrue(
-        KeyboardManager.runningLayouts[layout.manifestURL].has('fr')
-      );
-    });
-    test('insertRunningLayout: non-existing manifest', function(){
-      var layout = {
-        manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
-        id: 'en'
-      };
-      KeyboardManager.runningLayouts = {};
-
-      KeyboardManager.insertRunningLayout(layout);
-
-      assert.isTrue(
-        KeyboardManager.runningLayouts[layout.manifestURL] instanceof Set
-      );
-      assert.isTrue(
-        KeyboardManager.runningLayouts[layout.manifestURL].has('en')
-      );
-    });
-    test('deleteRunningLayout', function(){
-      var layout = {
-        manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
-        id: 'en'
-      };
-      KeyboardManager.runningLayouts = {};
-
-      KeyboardManager.runningLayouts[layout.manifestURL] = Set();
-      KeyboardManager.runningLayouts[layout.manifestURL].add(layout.id);
-
-      KeyboardManager.deleteRunningLayout(layout.manifestURL, layout.id);
-
-      assert.isFalse(
-        KeyboardManager.runningLayouts[layout.manifestURL].has('en')
-      );
-    });
-    test('deleteRunningKeyboard', function(){
-      var layout = {
-        manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
-        id: 'en'
-      };
-      KeyboardManager.runningLayouts = {};
-
-      KeyboardManager.runningLayouts[layout.manifestURL] = Set();
-
-      KeyboardManager.deleteRunningKeyboard(layout.manifestURL);
-
-      assert.isFalse(
-        KeyboardManager.runningLayouts.hasOwnProperty(layout.manifestURL)
-      );
-    });
   });
 
   test('setHasActiveKeyboard helper', function() {
