@@ -1,19 +1,19 @@
 'use strict';
 
-/* global MocksHelper, KeyboardFrameManager, MockKeyboardManager */
+/* global MocksHelper, InputFrameManager, MockKeyboardManager */
 
 require('/test/unit/mock_keyboard_manager.js');
-require('/js/keyboard_frame_manager.js');
+require('/js/input_frame_manager.js');
 
-var mocksForKeyboardFrameManager = new MocksHelper([
+var mocksForInputFrameManager = new MocksHelper([
   'KeyboardManager'
 ]).init();
 
-suite('KeyboardFrameManager', function() {
-  mocksForKeyboardFrameManager.attachTestHelpers();
+suite('InputFrameManager', function() {
+  mocksForInputFrameManager.attachTestHelpers();
 
   test('mozbrowserresize event', function() {
-    var keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+    var inputFrameManager = new InputFrameManager(MockKeyboardManager);
     var evt = {
       type: 'mozbrowserresize',
       detail: {
@@ -22,7 +22,7 @@ suite('KeyboardFrameManager', function() {
       stopPropagation: function() {}
     };
     this.sinon.stub(MockKeyboardManager, 'resizeKeyboard');
-    keyboardFrameManager.handleEvent(evt);
+    inputFrameManager.handleEvent(evt);
     assert.isTrue(MockKeyboardManager.resizeKeyboard.calledWith(evt));
   });
 
@@ -30,7 +30,7 @@ suite('KeyboardFrameManager', function() {
     var layout;
     var frame;
     var stubSetFrameActive;
-    var keyboardFrameManager;
+    var inputFrameManager;
     setup(function(){
       layout = {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
@@ -46,37 +46,37 @@ suite('KeyboardFrameManager', function() {
         removeEventListener: this.sinon.spy()
       };
 
-      keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
-      keyboardFrameManager._runningLayouts[layout.manifestURL] = {};
-      keyboardFrameManager._runningLayouts[layout.manifestURL][layout.id] =
+      inputFrameManager = new InputFrameManager(MockKeyboardManager);
+      inputFrameManager._runningLayouts[layout.manifestURL] = {};
+      inputFrameManager._runningLayouts[layout.manifestURL][layout.id] =
         frame;
 
-      stubSetFrameActive = sinon.stub(keyboardFrameManager, '_setFrameActive');
+      stubSetFrameActive = sinon.stub(inputFrameManager, '_setFrameActive');
     });
     test('setupFrame', function(){
-      keyboardFrameManager.setupFrame(layout);
+      inputFrameManager.setupFrame(layout);
       assert.isTrue(frame.classList.remove.calledWith('hide'));
       assert.isTrue(stubSetFrameActive.calledWith(frame, true));
       assert.isTrue(
         frame.addEventListener.calledWith(
-          'mozbrowserresize', keyboardFrameManager, true
+          'mozbrowserresize', inputFrameManager, true
         )
       );
     });
     test('resetFrame', function(){
-      keyboardFrameManager.resetFrame(layout);
+      inputFrameManager.resetFrame(layout);
       assert.isTrue(frame.classList.add.calledWith('hide'));
       assert.isTrue(stubSetFrameActive.calledWith(frame, false));
       assert.isTrue(
         frame.removeEventListener.calledWith(
-          'mozbrowserresize', keyboardFrameManager, true
+          'mozbrowserresize', inputFrameManager, true
         )
       );
     });
   });
 
   test('setFrameActive', function(){
-    var keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+    var inputFrameManager = new InputFrameManager(MockKeyboardManager);
 
     var frame = {
       setVisible: this.sinon.spy(),
@@ -90,7 +90,7 @@ suite('KeyboardFrameManager', function() {
     var stubSetHasActiveKB =
       this.sinon.stub(MockKeyboardManager, 'setHasActiveKeyboard');
 
-    keyboardFrameManager._setFrameActive(frame, true);
+    inputFrameManager._setFrameActive(frame, true);
 
     assert.isTrue(frame.setVisible.calledWith(true));
     assert.isTrue(frame.setInputMethodActive.calledWith(true));
@@ -100,7 +100,7 @@ suite('KeyboardFrameManager', function() {
     frame.setInputMethodActive.reset();
     stubSetHasActiveKB.reset();
 
-    keyboardFrameManager._setFrameActive(frame, false);
+    inputFrameManager._setFrameActive(frame, false);
 
     assert.isTrue(frame.setVisible.calledWith(false));
     assert.isTrue(frame.setInputMethodActive.calledWith(false));
@@ -108,11 +108,11 @@ suite('KeyboardFrameManager', function() {
   });
 
   suite('launchFrame', function() {
-    var keyboardFrameManager;
+    var inputFrameManager;
     var layout;
     var frame;
     setup(function(){
-      keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+      inputFrameManager = new InputFrameManager(MockKeyboardManager);
 
       layout = {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
@@ -133,12 +133,12 @@ suite('KeyboardFrameManager', function() {
     });
     test('layout is already running', function(){
       var stubIsRunningLayout =
-        this.sinon.stub(keyboardFrameManager, '_isRunningLayout').returns(true);
+        this.sinon.stub(inputFrameManager, '_isRunningLayout').returns(true);
 
       var stubIsRunningKeyboard =
-        this.sinon.stub(keyboardFrameManager, '_isRunningKeyboard');
+        this.sinon.stub(inputFrameManager, '_isRunningKeyboard');
 
-      keyboardFrameManager.launchFrame(layout);
+      inputFrameManager.launchFrame(layout);
 
       assert.isTrue(stubIsRunningLayout.calledWith(layout));
       assert.isFalse(stubIsRunningKeyboard.called);
@@ -146,23 +146,23 @@ suite('KeyboardFrameManager', function() {
 
     test('layout not running, keyboard running, getExistingFrame succeeds',
       function(){
-      this.sinon.stub(keyboardFrameManager, '_isRunningLayout').returns(false);
+      this.sinon.stub(inputFrameManager, '_isRunningLayout').returns(false);
 
       var stubIsRunningKeyboard =
-        this.sinon.stub(keyboardFrameManager, '_isRunningKeyboard')
+        this.sinon.stub(inputFrameManager, '_isRunningKeyboard')
         .returns(true);
 
       var stubInsertFrameRef =
-        this.sinon.stub(keyboardFrameManager, '_insertFrameRef');
+        this.sinon.stub(inputFrameManager, '_insertFrameRef');
 
       var stubGetFrame =
-        this.sinon.stub(keyboardFrameManager, '_getFrameFromExistingKeyboard')
+        this.sinon.stub(inputFrameManager, '_getFrameFromExistingKeyboard')
         .returns(frame);
 
       var stubLoadKeyboardLayout =
-        this.sinon.stub(keyboardFrameManager, '_loadKeyboardLayoutToFrame');
+        this.sinon.stub(inputFrameManager, '_loadKeyboardLayoutToFrame');
 
-      keyboardFrameManager.launchFrame(layout);
+      inputFrameManager.launchFrame(layout);
 
       assert.isTrue(stubIsRunningKeyboard.calledWith(layout));
       assert.isTrue(stubGetFrame.calledWith(layout));
@@ -177,23 +177,23 @@ suite('KeyboardFrameManager', function() {
 
     test('layout not running, keyboard running, getExistingFrame fails',
       function(){
-      this.sinon.stub(keyboardFrameManager, '_isRunningLayout').returns(false);
+      this.sinon.stub(inputFrameManager, '_isRunningLayout').returns(false);
 
-      this.sinon.stub(keyboardFrameManager, '_isRunningKeyboard').returns(true);
+      this.sinon.stub(inputFrameManager, '_isRunningKeyboard').returns(true);
 
-      this.sinon.stub(keyboardFrameManager, '_insertFrameRef');
+      this.sinon.stub(inputFrameManager, '_insertFrameRef');
 
-      this.sinon.stub(keyboardFrameManager, '_getFrameFromExistingKeyboard')
+      this.sinon.stub(inputFrameManager, '_getFrameFromExistingKeyboard')
       .returns(null);
 
       var stubLoadKeyboardLayout =
-        this.sinon.stub(keyboardFrameManager, '_loadKeyboardLayoutToFrame')
+        this.sinon.stub(inputFrameManager, '_loadKeyboardLayoutToFrame')
         .returns(frame);
 
       var stubSetFrameActive =
-        this.sinon.stub(keyboardFrameManager, '_setFrameActive');
+        this.sinon.stub(inputFrameManager, '_setFrameActive');
 
-      keyboardFrameManager.launchFrame(layout);
+      inputFrameManager.launchFrame(layout);
 
       assert.isTrue(stubLoadKeyboardLayout.calledWith(layout));
       assert.isTrue(stubSetFrameActive.calledWith(frame, false));
@@ -202,21 +202,21 @@ suite('KeyboardFrameManager', function() {
     });
 
     test('layout & keyboard not running', function(){
-      this.sinon.stub(keyboardFrameManager, '_isRunningLayout').returns(false);
-      this.sinon.stub(keyboardFrameManager, '_isRunningKeyboard')
+      this.sinon.stub(inputFrameManager, '_isRunningLayout').returns(false);
+      this.sinon.stub(inputFrameManager, '_isRunningKeyboard')
         .returns(false);
 
       var stubGetFrame =
-        this.sinon.stub(keyboardFrameManager, '_getFrameFromExistingKeyboard');
+        this.sinon.stub(inputFrameManager, '_getFrameFromExistingKeyboard');
 
       var stubLoadKeyboardLayout =
-        this.sinon.stub(keyboardFrameManager, '_loadKeyboardLayoutToFrame')
+        this.sinon.stub(inputFrameManager, '_loadKeyboardLayoutToFrame')
         .returns(frame);
 
-      this.sinon.stub(keyboardFrameManager, '_setFrameActive');
-      this.sinon.stub(keyboardFrameManager, '_insertFrameRef');
+      this.sinon.stub(inputFrameManager, '_setFrameActive');
+      this.sinon.stub(inputFrameManager, '_insertFrameRef');
 
-      keyboardFrameManager.launchFrame(layout);
+      inputFrameManager.launchFrame(layout);
 
       assert.isFalse(stubGetFrame.called);
       assert.isTrue(stubLoadKeyboardLayout.calledWith(layout));
@@ -224,17 +224,17 @@ suite('KeyboardFrameManager', function() {
   });
 
   test('loadKeyboardLayoutToFrame', function(){
-    var keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+    var inputFrameManager = new InputFrameManager(MockKeyboardManager);
 
     var stubConstructFrame =
-      this.sinon.stub(keyboardFrameManager, '_constructFrame').returns('kb');
+      this.sinon.stub(inputFrameManager, '_constructFrame').returns('kb');
 
     var oldKBFrameContainer = MockKeyboardManager.keyboardFrameContainer;
     MockKeyboardManager.keyboardFrameContainer = {
       appendChild: this.sinon.spy()
     };
 
-    var k = keyboardFrameManager._loadKeyboardLayoutToFrame('layout');
+    var k = inputFrameManager._loadKeyboardLayoutToFrame('layout');
 
     assert.equal(k, 'kb');
     assert.isTrue(stubConstructFrame.calledWith('layout'));
@@ -246,7 +246,7 @@ suite('KeyboardFrameManager', function() {
   });
 
   test('destroyFrame', function(){
-    var keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+    var inputFrameManager = new InputFrameManager(MockKeyboardManager);
     var layout = {
       manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
       id: 'en'
@@ -257,16 +257,16 @@ suite('KeyboardFrameManager', function() {
       }
     };
 
-    keyboardFrameManager._runningLayouts[layout.manifestURL] = {};
-    keyboardFrameManager._runningLayouts[layout.manifestURL][layout.id] = frame;
+    inputFrameManager._runningLayouts[layout.manifestURL] = {};
+    inputFrameManager._runningLayouts[layout.manifestURL][layout.id] = frame;
 
-    keyboardFrameManager.destroyFrame(layout.manifestURL, layout.id);
+    inputFrameManager.destroyFrame(layout.manifestURL, layout.id);
 
     assert.isTrue(frame.parentNode.removeChild.calledWith(frame));
   });
 
   suite('constructFrame', function() {
-    var keyboardFrameManager;
+    var inputFrameManager;
     var fakeKeyboardElem = {
       src: null,
       setAttribute: sinon.spy()
@@ -281,7 +281,7 @@ suite('KeyboardFrameManager', function() {
       sinon.stub(console, 'log');
     });
     setup(function() {
-      keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+      inputFrameManager = new InputFrameManager(MockKeyboardManager);
       this.sinon.stub(document, 'createElement').returns(fakeKeyboardElem);
       oldWindowApplications = window.applications;
       window.applications = {
@@ -307,7 +307,7 @@ suite('KeyboardFrameManager', function() {
           manifest: manifest
         });
 
-      var k = keyboardFrameManager._constructFrame(layout);
+      var k = inputFrameManager._constructFrame(layout);
 
       assert.equal(k, fakeKeyboardElem);
       assert.equal(k.src, layout.origin + layout.path);
@@ -338,7 +338,7 @@ suite('KeyboardFrameManager', function() {
         manifest: manifest
       });
 
-      var k = keyboardFrameManager._constructFrame(layout);
+      var k = inputFrameManager._constructFrame(layout);
 
       assert.equal(k, fakeKeyboardElem);
       assert.isFalse(k.setAttribute.calledWith('remote', 'true'));
@@ -358,7 +358,7 @@ suite('KeyboardFrameManager', function() {
         manifest: manifest
       });
 
-      var k = keyboardFrameManager._constructFrame(layout);
+      var k = inputFrameManager._constructFrame(layout);
 
       assert.equal(k, fakeKeyboardElem);
       assert.isFalse(k.setAttribute.calledWith('remote', 'true'));
@@ -369,10 +369,10 @@ suite('KeyboardFrameManager', function() {
   });
 
   suite('getFrameFromExistingKeyboard', function() {
-    var keyboardFrameManager;
+    var inputFrameManager;
     var newLayout;
     setup(function() {
-      keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+      inputFrameManager = new InputFrameManager(MockKeyboardManager);
       newLayout = {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'en',
@@ -385,16 +385,16 @@ suite('KeyboardFrameManager', function() {
           framePath: newLayout.path
         }
       };
-      keyboardFrameManager._runningLayouts[newLayout.manifestURL] = {};
-      keyboardFrameManager
+      inputFrameManager._runningLayouts[newLayout.manifestURL] = {};
+      inputFrameManager
       ._runningLayouts[newLayout.manifestURL][newLayout.id] = frame;
 
       var stubFrameManagerDelete =
-        this.sinon.stub(keyboardFrameManager, 'deleteRunningFrameRef');
+        this.sinon.stub(inputFrameManager, 'deleteRunningFrameRef');
       var stubKBManagerDelete =
-        this.sinon.stub(keyboardFrameManager._keyboardManager,
+        this.sinon.stub(inputFrameManager._keyboardManager,
                         'deleteRunningLayout');
-      var f = keyboardFrameManager._getFrameFromExistingKeyboard(newLayout);
+      var f = inputFrameManager._getFrameFromExistingKeyboard(newLayout);
 
       assert.equal(f, frame);
       assert.equal(f.src, newLayout.origin + newLayout.path);
@@ -418,16 +418,16 @@ suite('KeyboardFrameManager', function() {
         }
       };
 
-      keyboardFrameManager._runningLayouts[oldLayout.manifestURL] = {};
-      keyboardFrameManager
+      inputFrameManager._runningLayouts[oldLayout.manifestURL] = {};
+      inputFrameManager
       ._runningLayouts[oldLayout.manifestURL][oldLayout.id] = frame;
 
       var stubFrameManagerDelete =
-        this.sinon.stub(keyboardFrameManager, 'deleteRunningFrameRef');
+        this.sinon.stub(inputFrameManager, 'deleteRunningFrameRef');
       var stubKBManagerDelete =
         this.sinon.stub(MockKeyboardManager, 'deleteRunningLayout');
 
-      var f = keyboardFrameManager._getFrameFromExistingKeyboard(newLayout);
+      var f = inputFrameManager._getFrameFromExistingKeyboard(newLayout);
 
       assert.strictEqual(f, null);
       assert.isFalse(stubFrameManagerDelete.called);
@@ -436,9 +436,9 @@ suite('KeyboardFrameManager', function() {
   });
 
   suite('runningLayouts helpers', function() {
-    var keyboardFrameManager;
+    var inputFrameManager;
     setup(function() {
-      keyboardFrameManager = new KeyboardFrameManager(MockKeyboardManager);
+      inputFrameManager = new InputFrameManager(MockKeyboardManager);
     });
     test('insertFrameRef: existing manifest', function(){
       var layout = {
@@ -449,14 +449,14 @@ suite('KeyboardFrameManager', function() {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'fr'
       };
-      keyboardFrameManager._runningLayouts[layout.manifestURL] = {};
-      keyboardFrameManager
+      inputFrameManager._runningLayouts[layout.manifestURL] = {};
+      inputFrameManager
       ._runningLayouts[layout.manifestURL][layout.id] = 'dummy';
 
-      keyboardFrameManager._insertFrameRef(layout2, 'frame2');
+      inputFrameManager._insertFrameRef(layout2, 'frame2');
 
       assert.equal(
-        keyboardFrameManager._runningLayouts[layout2.manifestURL][layout2.id],
+        inputFrameManager._runningLayouts[layout2.manifestURL][layout2.id],
         'frame2'
       );
     });
@@ -465,10 +465,10 @@ suite('KeyboardFrameManager', function() {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'en'
       };
-      keyboardFrameManager._insertFrameRef(layout, 'frame');
+      inputFrameManager._insertFrameRef(layout, 'frame');
 
       assert.equal(
-        keyboardFrameManager._runningLayouts[layout.manifestURL][layout.id],
+        inputFrameManager._runningLayouts[layout.manifestURL][layout.id],
         'frame'
       );
     });
@@ -477,16 +477,16 @@ suite('KeyboardFrameManager', function() {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'en'
       };
-      keyboardFrameManager.runningLayouts = {};
+      inputFrameManager.runningLayouts = {};
 
-      keyboardFrameManager._runningLayouts[layout.manifestURL] = {};
-      keyboardFrameManager._runningLayouts[layout.manifestURL][layout.id] =
+      inputFrameManager._runningLayouts[layout.manifestURL] = {};
+      inputFrameManager._runningLayouts[layout.manifestURL][layout.id] =
         'dummy';
 
-      keyboardFrameManager.deleteRunningFrameRef(layout.manifestURL, layout.id);
+      inputFrameManager.deleteRunningFrameRef(layout.manifestURL, layout.id);
 
       assert.isFalse(
-        keyboardFrameManager._runningLayouts[layout.manifestURL]
+        inputFrameManager._runningLayouts[layout.manifestURL]
         .hasOwnProperty(layout.id)
       );
     });
@@ -495,14 +495,14 @@ suite('KeyboardFrameManager', function() {
         manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
         id: 'en'
       };
-      keyboardFrameManager._runningLayouts = {};
+      inputFrameManager._runningLayouts = {};
 
-      keyboardFrameManager._runningLayouts[layout.manifestURL] = {};
+      inputFrameManager._runningLayouts[layout.manifestURL] = {};
 
-      keyboardFrameManager.deleteRunningKeyboardRef(layout.manifestURL);
+      inputFrameManager.deleteRunningKeyboardRef(layout.manifestURL);
 
       assert.isFalse(
-        keyboardFrameManager._runningLayouts.hasOwnProperty(layout.manifestURL)
+        inputFrameManager._runningLayouts.hasOwnProperty(layout.manifestURL)
       );
     });
   });

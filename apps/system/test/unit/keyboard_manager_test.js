@@ -10,7 +10,7 @@ require('/shared/test/unit/mocks/mock_navigator_moz_settings.js');
 require('/test/unit/mock_applications.js');
 require('/test/unit/mock_homescreen_launcher.js');
 require('/test/unit/mock_ime_switcher.js');
-require('/test/unit/mock_keyboard_frame_manager.js');
+require('/test/unit/mock_input_frame_manager.js');
 require('/js/input_transition.js');
 require('/js/keyboard_manager.js');
 
@@ -20,7 +20,7 @@ var mocksHelperForKeyboardManager = new MocksHelper([
     'LazyLoader',
     'Applications',
     'IMESwitcher',
-    'KeyboardFrameManager'
+    'InputFrameManager'
 ]).init();
 
 suite('KeyboardManager', function() {

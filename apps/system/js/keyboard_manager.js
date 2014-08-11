@@ -166,8 +166,8 @@ var KeyboardManager = {
     }).bind(this);
     this.transitionManager.start();
 
-    this.keyboardFrameManager = new KeyboardFrameManager(this);
-    this.keyboardFrameManager.start();
+    this.inputFrameManager = new InputFrameManager(this);
+    this.inputFrameManager.start();
 
     LazyLoader.load([
       'shared/js/keyboard_helper.js'
@@ -332,7 +332,7 @@ var KeyboardManager = {
            previousLayout.id != self.showingLayoutInfo.layout.id)
          ) {
         self._debug('reset previousFrame.');
-        self.keyboardFrameManager.resetFrame(previousLayout);
+        self.inputFrameManager.resetFrame(previousLayout);
       }
     }
 
@@ -412,13 +412,13 @@ var KeyboardManager = {
     }
 
     for (var id of this.runningLayouts[manifestURL]) {
-      this.keyboardFrameManager.destroyFrame(manifestURL, id);
+      this.inputFrameManager.destroyFrame(manifestURL, id);
       this.deleteRunningLayout(manifestURL, id);
-      this.keyboardFrameManager.deleteRunningFrameRef(manifestURL, id);
+      this.inputFrameManager.deleteRunningFrameRef(manifestURL, id);
     }
 
     this.deleteRunningKeyboard(manifestURL);
-    this.keyboardFrameManager.deleteRunningKeyboardRef(manifestURL);
+    this.inputFrameManager.deleteRunningKeyboardRef(manifestURL);
 
     if (handleOOM && revokeShowedType !== null) {
       this.setKeyboardToShow(revokeShowedType);
@@ -435,7 +435,7 @@ var KeyboardManager = {
     }
     this._debug('set layout to display: type=' + group + ' index=' + index);
     var layout = this.keyboardLayouts[group][index];
-    this.keyboardFrameManager.launchFrame(layout);
+    this.inputFrameManager.launchFrame(layout);
     this.insertRunningLayout(layout);
     this.setShowingLayoutInfo(group, index, layout);
 
@@ -453,7 +453,7 @@ var KeyboardManager = {
       this.transitionManager.handleResize(this.showingLayoutInfo.height);
     }
 
-    this.keyboardFrameManager.setupFrame(layout);
+    this.inputFrameManager.setupFrame(layout);
   },
 
   /**
@@ -482,7 +482,7 @@ var KeyboardManager = {
       return;
     }
 
-    this.keyboardFrameManager.resetFrame(this.showingLayoutInfo.layout);
+    this.inputFrameManager.resetFrame(this.showingLayoutInfo.layout);
 
     this.resetShowingLayoutInfo();
   },

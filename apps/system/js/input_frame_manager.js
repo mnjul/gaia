@@ -5,13 +5,13 @@
 (function(exports) {
 
   /**
-   * KeyboardFrameManager manages all the iframe-related operations that
+   * InputFrameManager manages all the iframe-related operations that
    * has to do with keyboard layouts. It receives a layout from KeyboardManager
    * and performs operations on the iframe associated with the layout, such that
    * KeyboardManager does not have to be concerned about the inner mechanisms
    * of a keyboard iframe.
    */
-  var KeyboardFrameManager = function(keyboardManager) {
+  var InputFrameManager = function(keyboardManager) {
     this._keyboardManager = keyboardManager;
 
     // The set of running keyboards.
@@ -25,32 +25,32 @@
     this._onDebug = false;
   };
 
-  KeyboardFrameManager.prototype._debug = function kfm__debug(msg) {
+  InputFrameManager.prototype._debug = function ifm__debug(msg) {
     if (this._onDebug) {
       console.log('[Keyboard Manager] ' + msg);
     }
   };
 
-  KeyboardFrameManager.prototype.start = function kfm_start() {
+  InputFrameManager.prototype.start = function ifm_start() {
 
   };
 
-  KeyboardFrameManager.prototype.stop = function kfm_stop() {
+  InputFrameManager.prototype.stop = function ifm_stop() {
 
   };
 
-  KeyboardFrameManager.prototype.handleEvent = function kfm_handleEvent(evt) {
+  InputFrameManager.prototype.handleEvent = function ifm_handleEvent(evt) {
     this._keyboardManager.resizeKeyboard(evt);
   };
 
-  KeyboardFrameManager.prototype.setupFrame = function kfm_setupFrame(layout) {
+  InputFrameManager.prototype.setupFrame = function ifm_setupFrame(layout) {
     var frame = this._runningLayouts[layout.manifestURL][layout.id];
     frame.classList.remove('hide');
     this._setFrameActive(frame, true);
     frame.addEventListener('mozbrowserresize', this, true);
   };
 
-  KeyboardFrameManager.prototype.resetFrame = function kfm_resetFrame(layout) {
+  InputFrameManager.prototype.resetFrame = function ifm_resetFrame(layout) {
     if (!layout) {
       return;
     }
@@ -66,8 +66,8 @@
     frame.removeEventListener('mozbrowserresize', this, true);
   };
 
-  KeyboardFrameManager.prototype._setFrameActive =
-    function kfm_setFrameActive(frame, active) {
+  InputFrameManager.prototype._setFrameActive =
+    function ifm_setFrameActive(frame, active) {
     this._debug('setFrameActive: ' +
                 frame.dataset.frameManifestURL +
                 frame.dataset.framePath + ', active: ' + active);
@@ -82,8 +82,8 @@
     this._keyboardManager.setHasActiveKeyboard(active);
   };
 
-  KeyboardFrameManager.prototype.launchFrame =
-    function kfm_launchFrame(layout) {
+  InputFrameManager.prototype.launchFrame =
+    function ifm_launchFrame(layout) {
     if (this._isRunningLayout(layout)) {
       this._debug('this layout is running');
       return;
@@ -110,15 +110,15 @@
     this._insertFrameRef(layout, frame);
   };
 
-  KeyboardFrameManager.prototype._loadKeyboardLayoutToFrame =
-    function kfm__loadKeyboardLayoutToFrame(layout) {
+  InputFrameManager.prototype._loadKeyboardLayoutToFrame =
+    function ifm__loadKeyboardLayoutToFrame(layout) {
     var keyboard = this._constructFrame(layout);
     this._keyboardManager.keyboardFrameContainer.appendChild(keyboard);
     return keyboard;
   };
 
-  KeyboardFrameManager.prototype._constructFrame =
-    function kfm__constructFrame(layout) {
+  InputFrameManager.prototype._constructFrame =
+    function ifm__constructFrame(layout) {
 
     // Generate a <iframe mozbrowser> containing the keyboard.
     var keyboard = document.createElement('iframe');
@@ -145,8 +145,8 @@
     return keyboard;
   };
 
-  KeyboardFrameManager.prototype._getFrameFromExistingKeyboard =
-    function kfm__getFrameFromExistingKeyboard(layout) {
+  InputFrameManager.prototype._getFrameFromExistingKeyboard =
+    function ifm__getFrameFromExistingKeyboard(layout) {
     var frame = null;
     var runningKeybaord = this._runningLayouts[layout.manifestURL];
     for (var id in runningKeybaord) {
@@ -165,8 +165,8 @@
     return frame;
   };
 
-  KeyboardFrameManager.prototype.destroyFrame =
-    function kfm_destroyFrame(kbManifestURL, layoutID) {
+  InputFrameManager.prototype.destroyFrame =
+    function ifm_destroyFrame(kbManifestURL, layoutID) {
     var frame = this._runningLayouts[kbManifestURL][layoutID];
     try {
       frame.parentNode.removeChild(frame);
@@ -175,8 +175,8 @@
     }
   };
 
-  KeyboardFrameManager.prototype._insertFrameRef =
-    function kfm__insertFrameRef(layout, frame) {
+  InputFrameManager.prototype._insertFrameRef =
+    function ifm__insertFrameRef(layout, frame) {
     if (!(layout.manifestURL in this._runningLayouts)) {
       this._runningLayouts[layout.manifestURL] = {};
     }
@@ -184,29 +184,29 @@
     this._runningLayouts[layout.manifestURL][layout.id] = frame;
   };
 
-  KeyboardFrameManager.prototype.deleteRunningKeyboardRef =
-    function kfm_deleteRunningKeyboardRef(kbManifestURL) {
+  InputFrameManager.prototype.deleteRunningKeyboardRef =
+    function ifm_deleteRunningKeyboardRef(kbManifestURL) {
     delete this._runningLayouts[kbManifestURL];
   };
 
-  KeyboardFrameManager.prototype.deleteRunningFrameRef =
-    function kfm_deleteRunningLayoutRef(kbManifestURL, layoutID) {
+  InputFrameManager.prototype.deleteRunningFrameRef =
+    function ifm_deleteRunningLayoutRef(kbManifestURL, layoutID) {
     delete this._runningLayouts[kbManifestURL][layoutID];
   };
 
-  KeyboardFrameManager.prototype._isRunningKeyboard =
-    function kfm__isRunningKeyboard(layout) {
+  InputFrameManager.prototype._isRunningKeyboard =
+    function ifm__isRunningKeyboard(layout) {
     return this._runningLayouts.hasOwnProperty(layout.manifestURL);
   };
 
-  KeyboardFrameManager.prototype._isRunningLayout =
-    function kfm__isRunningLayout(layout) {
+  InputFrameManager.prototype._isRunningLayout =
+    function ifm__isRunningLayout(layout) {
     if (!this._isRunningKeyboard(layout)) {
       return false;
    }
     return this._runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
   };
 
-  exports.KeyboardFrameManager = KeyboardFrameManager;
+  exports.InputFrameManager = InputFrameManager;
 
 })(window);
