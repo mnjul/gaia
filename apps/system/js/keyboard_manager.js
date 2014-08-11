@@ -66,13 +66,6 @@ var KeyboardManager = {
    */
   keyboardLayouts: {},
 
-  // The set of running keyboards.
-  // This is a map from keyboard manifestURL to an ECMAScript 6 Set
-  // like this:
-  // 'keyboard.gaiamobile.org/manifest.webapp' :
-  //    Set('english', 'France')
-  runningLayouts: {},
-
   // this info keeps the current keyboard layout's information,
   // including its type, its index in the type array,
   // its occupying height and its "layout" as kept in "keyboardLayouts"
@@ -245,13 +238,14 @@ var KeyboardManager = {
     window.dispatchEvent(event);
 
     // Remove apps that are no longer enabled to clean up.
-    Object.keys(this.runningLayouts).forEach(function removeApp(manifestURL) {
+    Object.keys(this.inputFrameManager.runningLayouts).forEach(
+      function removeApp(manifestURL) {
       if (!enabledApps.has(manifestURL)) {
         this.removeKeyboard(manifestURL);
       }
     }, this);
 
-    if (Object.keys(this.runningLayouts).length) {
+    if (Object.keys(this.inputFrameManager.runningLayouts).length) {
       // There are already keyboard(s) being launched. We don't really care
       // if a default keyboard should be launch-on-boot.
       return;
@@ -268,7 +262,8 @@ var KeyboardManager = {
 
       // if there are still no keyboards running at this point -
       // set text to show, but don't bring it to the foreground.
-      if (launchOnBoot && !Object.keys(this.runningLayouts).length) {
+      if (launchOnBoot &&
+          !Object.keys(this.inputFrameManager.runningLayouts).length) {
         this.setKeyboardToShow('text', undefined, true);
       }
     }).bind(this);
@@ -382,8 +377,9 @@ var KeyboardManager = {
         // We only do that when we don't run keyboards OOP.
         this._debug('mozmemorypressure event');
         if (!this.isOutOfProcessEnabled && !this.hasActiveKeyboard) {
-          Object.keys(this.runningLayouts).forEach(this.removeKeyboard, this);
-          this.runningLayouts = {};
+          Object.keys(this.inputFrameManager.runningLayouts)
+                .forEach(this.removeKeyboard, this);
+          this.inputFrameManager.runningLayouts = {};
           this._debug('mozmemorypressure event; keyboard removed');
         }
         break;
@@ -401,7 +397,7 @@ var KeyboardManager = {
 
   removeKeyboard: function km_removeKeyboard(manifestURL, handleOOM) {
     var revokeShowedType = null;
-    if (!this.runningLayouts.hasOwnProperty(manifestURL)) {
+    if (!this.inputFrameManager.runningLayouts.hasOwnProperty(manifestURL)) {
       return;
     }
 
@@ -411,13 +407,11 @@ var KeyboardManager = {
       this.hideKeyboard();
     }
 
-    for (var id of this.runningLayouts[manifestURL]) {
+    for (var id in this.inputFrameManager.runningLayouts[manifestURL]) {
       this.inputFrameManager.destroyFrame(manifestURL, id);
-      this.deleteRunningLayout(manifestURL, id);
       this.inputFrameManager.deleteRunningFrameRef(manifestURL, id);
     }
 
-    this.deleteRunningKeyboard(manifestURL);
     this.inputFrameManager.deleteRunningKeyboardRef(manifestURL);
 
     if (handleOOM && revokeShowedType !== null) {
@@ -436,7 +430,6 @@ var KeyboardManager = {
     this._debug('set layout to display: type=' + group + ' index=' + index);
     var layout = this.keyboardLayouts[group][index];
     this.inputFrameManager.launchFrame(layout);
-    this.insertRunningLayout(layout);
     this.setShowingLayoutInfo(group, index, layout);
 
     // By setting launchOnly to true, we load the keyboard frame w/o bringing it
@@ -506,23 +499,6 @@ var KeyboardManager = {
 
   setHasActiveKeyboard: function km_setHasActiveKeyboard(active) {
     this.hasActiveKeyboard = active;
-  },
-
-  insertRunningLayout: function km_insertRunningLayout(layout) {
-    if (!(layout.manifestURL in this.runningLayouts)) {
-      this.runningLayouts[layout.manifestURL] = Set();
-    }
-
-    this.runningLayouts[layout.manifestURL].add(layout.id);
-  },
-
-  deleteRunningLayout: function km_delRunningLayout(kbManifestURL, layoutID) {
-    // use ['delete'] instead of .delete to make jslint happy
-    this.runningLayouts[kbManifestURL]['delete'](layoutID);
-  },
-
-  deleteRunningKeyboard: function km_deleteRunningKeyboard(kbManifestURL) {
-    delete this.runningLayouts[kbManifestURL];
   },
 
   resetShowingLayoutInfo: function km_resetShowingLayoutInfo() {

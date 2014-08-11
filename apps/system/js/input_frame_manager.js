@@ -19,8 +19,7 @@
     // 'keyboard.gaiamobile.org/manifest.webapp' : {
     //   'English': aIframe
     // }
-
-    this._runningLayouts = {};
+    this.runningLayouts = {};
 
     this._onDebug = false;
   };
@@ -44,7 +43,7 @@
   };
 
   InputFrameManager.prototype.setupFrame = function ifm_setupFrame(layout) {
-    var frame = this._runningLayouts[layout.manifestURL][layout.id];
+    var frame = this.runningLayouts[layout.manifestURL][layout.id];
     frame.classList.remove('hide');
     this._setFrameActive(frame, true);
     frame.addEventListener('mozbrowserresize', this, true);
@@ -55,7 +54,7 @@
       return;
     }
 
-    var frame = this._runningLayouts[layout.manifestURL][layout.id];
+    var frame = this.runningLayouts[layout.manifestURL][layout.id];
 
     if (!frame) {
       return;
@@ -148,7 +147,7 @@
   InputFrameManager.prototype._getFrameFromExistingKeyboard =
     function ifm__getFrameFromExistingKeyboard(layout) {
     var frame = null;
-    var runningKeybaord = this._runningLayouts[layout.manifestURL];
+    var runningKeybaord = this.runningLayouts[layout.manifestURL];
     for (var id in runningKeybaord) {
       var oldPath = runningKeybaord[id].dataset.framePath;
       var newPath = layout.path;
@@ -158,7 +157,6 @@
         frame.src = layout.origin + newPath;
         this._debug(id + ' is overwritten: ' + frame.src);
         this.deleteRunningFrameRef(layout.manifestURL, id);
-        this._keyboardManager.deleteRunningLayout(layout.manifestURL, id);
         break;
       }
     }
@@ -167,7 +165,7 @@
 
   InputFrameManager.prototype.destroyFrame =
     function ifm_destroyFrame(kbManifestURL, layoutID) {
-    var frame = this._runningLayouts[kbManifestURL][layoutID];
+    var frame = this.runningLayouts[kbManifestURL][layoutID];
     try {
       frame.parentNode.removeChild(frame);
     } catch (e) {
@@ -177,26 +175,26 @@
 
   InputFrameManager.prototype._insertFrameRef =
     function ifm__insertFrameRef(layout, frame) {
-    if (!(layout.manifestURL in this._runningLayouts)) {
-      this._runningLayouts[layout.manifestURL] = {};
+    if (!(layout.manifestURL in this.runningLayouts)) {
+      this.runningLayouts[layout.manifestURL] = {};
     }
 
-    this._runningLayouts[layout.manifestURL][layout.id] = frame;
+    this.runningLayouts[layout.manifestURL][layout.id] = frame;
   };
 
   InputFrameManager.prototype.deleteRunningKeyboardRef =
     function ifm_deleteRunningKeyboardRef(kbManifestURL) {
-    delete this._runningLayouts[kbManifestURL];
+    delete this.runningLayouts[kbManifestURL];
   };
 
   InputFrameManager.prototype.deleteRunningFrameRef =
     function ifm_deleteRunningLayoutRef(kbManifestURL, layoutID) {
-    delete this._runningLayouts[kbManifestURL][layoutID];
+    delete this.runningLayouts[kbManifestURL][layoutID];
   };
 
   InputFrameManager.prototype._isRunningKeyboard =
     function ifm__isRunningKeyboard(layout) {
-    return this._runningLayouts.hasOwnProperty(layout.manifestURL);
+    return this.runningLayouts.hasOwnProperty(layout.manifestURL);
   };
 
   InputFrameManager.prototype._isRunningLayout =
@@ -204,7 +202,7 @@
     if (!this._isRunningKeyboard(layout)) {
       return false;
    }
-    return this._runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
+    return this.runningLayouts[layout.manifestURL].hasOwnProperty(layout.id);
   };
 
   exports.InputFrameManager = InputFrameManager;
