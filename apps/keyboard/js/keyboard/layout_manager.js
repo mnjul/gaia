@@ -75,7 +75,9 @@ LayoutManager.prototype.switchCurrentLayout = function(layoutName) {
 
     this.currentLayout = layout;
     this.currentLayoutName = layoutName;
-    this.currentLayoutPage = this.LAYOUT_PAGE_DEFAULT;
+    console.log('currentLayoutPage 0;');
+    this.currentLayoutPage = this._getInitLayoutPage();
+    console.log('currentLayoutPage 1; ', this.currentLayoutPage);
     this.currentForcedModifiedLayoutName = undefined;
 
     this._updateModifiedLayout();
@@ -155,14 +157,6 @@ LayoutManager.prototype._updateModifiedLayout = function() {
   // We might need to switch to a alternative layout
   var alternativeLayoutName =
     this._getAlternativeLayoutName(basicInputType, inputMode);
-
-  if ('alternateLayout' === alternativeLayoutName &&
-      ('number' === basicInputType ||
-       ('text' === basicInputType && 'numeric' === inputMode)
-      )
-     ) {
-    this.currentLayoutPage = this.LAYOUT_PAGE_SYMBOLS_I;
-  }
 
   var layout;
   if (this.currentForcedModifiedLayoutName) {
@@ -412,6 +406,23 @@ LayoutManager.prototype._updateModifiedLayout = function() {
   }
 };
 
+// XXX: comment it
+LayoutManager.prototype._getInitLayoutPage = function() {
+    var inputMode = this.app.inputContext.inputMode;
+    var basicInputType = this.app.getBasicInputType();
+
+    // we launch into alternative layout if user is at number-type input
+    // XXX: but if the inputMode is 'digit', we need to launch 'pinLayout';
+    //      the first switch-case in _getAlternativeLayoutName would not allow
+    //      launching pinLayout if we set _SYMBOLS_I here.
+    if (('number' === basicInputType && 'digit' !== inputMode) ||
+        ('text' === basicInputType && 'numeric' === inputMode)) {
+      return this.LAYOUT_PAGE_SYMBOLS_I;
+    } else {
+      return this.LAYOUT_PAGE_DEFAULT;
+    }
+};
+
 LayoutManager.prototype._getAlternativeLayoutName = function(basicInputType,
                                                              inputMode) {
   switch (this.currentLayoutPage) {
@@ -430,9 +441,6 @@ LayoutManager.prototype._getAlternativeLayoutName = function(basicInputType,
       switch (inputMode) {
         case 'digit':
           return 'pinLayout';
-
-        default:
-          return 'alternateLayout';
       }
 
       break;
@@ -443,9 +451,6 @@ LayoutManager.prototype._getAlternativeLayoutName = function(basicInputType,
       switch (inputMode) {
         case 'digit':
           return 'pinLayout';
-
-        case 'numeric':
-          return 'alternateLayout';
 
         case '-moz-sms':
           var smsLayoutName = this.currentLayoutName + '-sms';
