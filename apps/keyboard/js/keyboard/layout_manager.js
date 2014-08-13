@@ -75,9 +75,7 @@ LayoutManager.prototype.switchCurrentLayout = function(layoutName) {
 
     this.currentLayout = layout;
     this.currentLayoutName = layoutName;
-    console.log('currentLayoutPage 0;');
     this.currentLayoutPage = this._getInitLayoutPage();
-    console.log('currentLayoutPage 1; ', this.currentLayoutPage);
     this.currentForcedModifiedLayoutName = undefined;
 
     this._updateModifiedLayout();
@@ -406,12 +404,13 @@ LayoutManager.prototype._updateModifiedLayout = function() {
   }
 };
 
-// XXX: comment it
+// we may launch into some alternative layout page
+// for some specific input types/modes
+// for bug 1024298, launch into symbols 1 page for number-type inputs
 LayoutManager.prototype._getInitLayoutPage = function() {
   var inputMode = this.app.inputContext.inputMode;
   var basicInputType = this.app.getBasicInputType();
 
-  // we launch into alternative layout if user is at number-type input
   // XXX: but if the inputMode is 'digit', we need to launch 'pinLayout';
   //      the first switch-case in _getAlternativeLayoutName would not allow
   //      launching pinLayout if we set _SYMBOLS_I here.
