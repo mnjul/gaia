@@ -42,6 +42,8 @@ suite('LayoutManager', function() {
     manager.start();
     manager.loader.SOURCE_DIR = './fake-layouts/';
 
+    this.sinon.stub(manager, '_getInitLayoutPage').returns(manager.LAYOUT_PAGE_DEFAULT);    
+
     var p = manager.switchCurrentLayout('foo');
 
     p.then(function() {
@@ -79,6 +81,8 @@ suite('LayoutManager', function() {
     manager.start();
     manager.loader.SOURCE_DIR = './fake-layouts/';
 
+    this.sinon.stub(manager, '_getInitLayoutPage').returns(manager.LAYOUT_PAGE_DEFAULT);
+
     var p1 = manager.switchCurrentLayout('foo');
     var p2 = manager.switchCurrentLayout('foo');
     p1.then(function() {
@@ -105,6 +109,8 @@ suite('LayoutManager', function() {
     var manager = new LayoutManager({});
     manager.start();
     manager.loader.SOURCE_DIR = './fake-layouts/';
+
+    this.sinon.stub(manager, '_getInitLayoutPage').returns(manager.LAYOUT_PAGE_DEFAULT);
 
     var p = manager.switchCurrentLayout('foo');
     p.then(function() {
