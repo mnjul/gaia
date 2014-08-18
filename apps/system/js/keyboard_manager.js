@@ -175,53 +175,51 @@ var KeyboardManager = {
     return this.transitionManager.occupyingHeight;
   },
 
-  updateLayouts: function km_updateLayouts(layouts) {
-    var enabledApps = new Set();
+  // XXX: Functions related to layouts should be moved to another module?
+  // ^^^ BEGIN
+
+  kmul_transformLayout: function kmul_transformLayout() {
+    var transformedLayout = {
+      id: layout.layoutId,
+      origin: layout.app.origin,
+      manifestURL: layout.app.manifestURL,
+      path: layout.inputManifest.launch_path
+    };
 
     // tiny helper - bound to the manifests
     function getName() {
       return this.name;
     }
 
-    function transformLayout(layout) {
-      var transformedLayout = {
-        id: layout.layoutId,
-        origin: layout.app.origin,
-        manifestURL: layout.app.manifestURL,
-        path: layout.inputManifest.launch_path
-      };
-
-      // define properties for name that resolve at display time
-      // to the correct language via the ManifestHelper
-      Object.defineProperties(transformedLayout, {
-        name: {
-          get: getName.bind(layout.inputManifest),
-          enumerable: true
-        },
-        appName: {
-          get: getName.bind(layout.manifest),
-          enumerable: true
-        }
-      });
-
-      return transformedLayout;
-    }
-
-    function insertLayout(object, type, layout) {
-      if (!object[type]) {
-        object[type] = [];
-        object[type].activeLayout = 0;
+    // define properties for name that resolve at display time
+    // to the correct language via the ManifestHelper
+    Object.defineProperties(transformedLayout, {
+      name: {
+        get: getName.bind(layout.inputManifest),
+        enumerable: true
+      },
+      appName: {
+        get: getName.bind(layout.manifest),
+        enumerable: true
       }
+    });
 
-      object[type].push(layout);
-    }
+    return transformedLayout;
+  },
 
+  updateLayouts: function km_updateLayouts(layouts) {
+    var enabledApps = new Set();
+
+    var self = this;
+
+    // XXX: split the reduce+foreach first
     function reduceLayouts(carry, layout) {
       enabledApps.add(layout.app.manifestURL);
       // add the layout to each type and return the carry
       layout.inputManifest.types.filter(KeyboardHelper.isKeyboardType)
         .forEach(function(type) {
-          insertLayout(carry, type, transformLayout(layout));
+          carry[type] = carry[type] || [];
+          carry[type].push(self.kmul_transformLayout(layout));
         });
 
       return carry;
@@ -239,9 +237,17 @@ var KeyboardManager = {
         var layout = KeyboardHelper.fallbackLayouts[group];
 
         enabledApps.add(layout.app.manifestURL);
-        insertLayout(this.keyboardLayouts, group, transformLayout(layout));
+
+        // XXX: init activelayout later
+        this.keyboardLayouts[group] = [self.kmul_transformLayout(layout)];
       }
     }
+
+    for(var group in this.keyboardLayouts) {
+      this.keyboardLayouts[group].activeLayout = 0;
+    }
+
+    // XXX this should finish layout generation
 
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable
@@ -292,6 +298,8 @@ var KeyboardManager = {
       }
     }).bind(this);
   },
+
+  // ^^^ END
 
   resizeKeyboard: function km_resizeKeyboard(evt) {
     // Ignore mozbrowserresize event while keyboard Frame is transitioning out.
