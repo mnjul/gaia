@@ -97,13 +97,13 @@
     // (for example, user enables only CJKV IMEs, and for 'password'
     //  we need to enable 'en')
     Object.keys(KeyboardHelper.fallbackLayouts).filter(
-      g => !(g in this.layouts)
-    ).forEach(function (g) {
-      var layout = KeyboardHelper.fallbackLayouts[g];
+      grp => !(grp in this.layouts)
+    ).forEach(function (group) {
+      var layout = KeyboardHelper.fallbackLayouts[group];
 
       enabledApps.add(layout.app.manifestURL);
 
-      this.keyboardLayouts[g] = [this._transformLayout(layout)];
+      this.layouts[group] = [this._transformLayout(layout)];
     }, this);
 
     for (var group in this.layouts) {
