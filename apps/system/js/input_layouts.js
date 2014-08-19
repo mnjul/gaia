@@ -78,20 +78,16 @@
 
   InputLayouts.prototype._insertLayouts =
     function il_insertLayouts(appLayouts) {
-    // XXXXXXX
-    var reduceLayouts = function (carry, layout) {
+
+    appLayouts.forEach(function (layout) {
       this._enabledApps.add(layout.app.manifestURL);
-      // add the layout to each type and return the carry
+
       layout.inputManifest.types.filter(KeyboardHelper.isKeyboardType)
-        .forEach(function(type) {
-          carry[type] = carry[type] || [];
-          carry[type].push(this._transformLayout(layout));
+        .forEach(function(group) {
+          this.layouts[group] = this.layouts[group] || [];
+          this.layouts[group].push(this._transformLayout(layout));
         }, this);
-
-      return carry;
-    };
-
-    this.layouts = appLayouts.reduce(reduceLayouts.bind(this), {});
+    }, this);
   };
 
   InputLayouts.prototype._insertFallbackLayouts =
@@ -135,6 +131,7 @@
 
   InputLayouts.prototype.processLayouts =
     function il_processLayouts(appLayouts) {
+    this.layouts = {};
     this._enabledApps = Set();
 
     this._insertLayouts(appLayouts);
