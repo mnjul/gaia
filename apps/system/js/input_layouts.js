@@ -11,6 +11,28 @@
   var InputLayouts = function(keyboardManager) {
     this._keyboardManager = keyboardManager;
 
+    /**
+     *
+     * The set of installed keyboard layouts grouped by type_group
+     *                                                  (as in KeyboardManager)
+     * This is a map from type_group to an object arrays.
+     *
+     * i.e:
+     * {
+     *   text: [ {...}, {...} ],
+     *   number: [ {...}, {...} ]
+     * }
+     *
+     * Each element in the arrays represents a keyboard layout:
+     * {
+     *    id: the unique id of the keyboard, the key of inputs
+     *    name: the keyboard layout's name
+     *    appName: the keyboard app name
+     *    manifestURL: the keyboard's manifestURL
+     *    path: the keyboard's launch path
+     * }
+     */
+    this.layouts = {};
   };
 
   InputLayouts.prototype.start = function il_start() {
@@ -54,22 +76,20 @@
   InputLayouts.prototype.processLayouts = function il_processLayouts(layouts) {
     var enabledApps = new Set();
 
-    var self = this;
-
     // XXX: split the reduce+foreach first
-    function reduceLayouts(carry, layout) {
+    var reduceLayouts = function (carry, layout) {
       enabledApps.add(layout.app.manifestURL);
       // add the layout to each type and return the carry
       layout.inputManifest.types.filter(KeyboardHelper.isKeyboardType)
         .forEach(function(type) {
           carry[type] = carry[type] || [];
-          carry[type].push(self._transformLayout(layout));
-        });
+          carry[type].push(this._transformLayout(layout));
+        }, this);
 
       return carry;
-    }
+    };
 
-    this._keyboardManager.keyboardLayouts = layouts.reduce(reduceLayouts, {});
+    this.layouts = layouts.reduce(reduceLayouts.bind(this), {});
 
     // bug 1035117:
     // at this moment, if the 'fallback' groups (managed by KeyboardHelper)
@@ -77,30 +97,27 @@
     // (for example, user enables only CJKV IMEs, and for 'password'
     //  we need to enable 'en')
     for (var group in KeyboardHelper.fallbackLayouts) {
-      if (!(group in this._keyboardManager.keyboardLayouts)) {
+      if (!(group in this.layouts)) {
         var layout = KeyboardHelper.fallbackLayouts[group];
 
         enabledApps.add(layout.app.manifestURL);
 
-        this.keyboardLayouts[group] = [self._transformLayout(layout)];
+        this.keyboardLayouts[group] = [this._transformLayout(layout)];
       }
     }
 
-    for (group in this._keyboardManager.keyboardLayouts) {
-      this._keyboardManager.keyboardLayouts[group].activeLayout = 0;
+    for (group in this.layouts) {
+      this.layouts[group].activeLayout = 0;
     }
 
-    // XXX: reorg this
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable
     var countLayouts = {};
-    Object.keys(this._keyboardManager.keyboardLayouts).forEach(function(k) {
-      var typeTable = this._keyboardManager.inputTypeTable[k];
-      for (var i in typeTable) {
-        var inputType = typeTable[i];
-        countLayouts[inputType] =
-          this._keyboardManager.keyboardLayouts[k].length;
-      }
+    Object.keys(this.layouts).forEach(function(group) {
+      var types = this._keyboardManager.inputTypeTable[group];
+      types.forEach(function(type) {
+        countLayouts[type] = this.layouts[group].length;
+      }, this);
     }, this);
 
     var event = document.createEvent('CustomEvent');

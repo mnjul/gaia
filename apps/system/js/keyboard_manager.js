@@ -44,31 +44,9 @@ var KeyboardManager = {
   inputTypeTable: {},
   keyboardFrameContainer: null,
 
-  /**
-   *
-   * The set of installed keyboard layouts grouped by type_group.
-   * This is a map from type_group to an object arrays.
-   *
-   * i.e:
-   * {
-   *   text: [ {...}, {...} ],
-   *   number: [ {...}, {...} ]
-   * }
-   *
-   * Each element in the arrays represents a keyboard layout:
-   * {
-   *    id: the unique id of the keyboard, the key of inputs
-   *    name: the keyboard layout's name
-   *    appName: the keyboard app name
-   *    manifestURL: the keyboard's manifestURL
-   *    path: the keyboard's launch path
-   * }
-   */
-  keyboardLayouts: {},
-
   // this info keeps the current keyboard layout's information,
   // including its type, its index in the type array,
-  // its occupying height and its "layout" as kept in "keyboardLayouts"
+  // its occupying height and its "layout" as kept in InputLayouts.layouts
   showingLayoutInfo: {
     type: 'text',
     index: 0,
@@ -251,7 +229,7 @@ var KeyboardManager = {
     // Set one of the keyboard layout for the specific group as active.
     function activateKeyboard() {
       // if we already have layouts for the group, no need to check default
-      if (!self.keyboardLayouts[group]) {
+      if (!self.inputLayouts.layouts[group]) {
         KeyboardHelper.checkDefaults(function changedDefaults() {
             KeyboardHelper.getLayouts({ enabled: true },
               self.updateLayouts.bind(self));
@@ -259,7 +237,7 @@ var KeyboardManager = {
         });
       }
       // if there are still no keyboards to use
-      if (!self.keyboardLayouts[group]) {
+      if (!self.inputLayouts.layouts[group]) {
         group = 'text';
       }
 
@@ -268,10 +246,10 @@ var KeyboardManager = {
       // Get the last keyboard the user used for this group
       var currentActiveLayout = KeyboardHelper.getCurrentActiveLayout(group);
       var currentActiveLayoutIdx;
-      if (currentActiveLayout && self.keyboardLayouts[group]) {
-        for (var ix = 0; ix < self.keyboardLayouts[group].length; ix++) {
+      if (currentActiveLayout && self.inputLayouts.layouts[group]) {
+        for (var ix = 0; ix < self.inputLayouts.layouts[group].length; ix++) {
           // See if we still have that keyboard in our current layouts
-          var layout = self.keyboardLayouts[group][ix];
+          var layout = self.inputLayouts.layouts[group][ix];
           if (layout.manifestURL === currentActiveLayout.manifestURL &&
               layout.id === currentActiveLayout.id) {
             // If so, default to that, saving the users choice
@@ -307,7 +285,7 @@ var KeyboardManager = {
       self._debug('get focus event ' + type);
       // by the order in Settings app, we should display
       // if target group (input type) does not exist, use text for default
-      if (!self.keyboardLayouts[group]) {
+      if (!self.inputLayouts.layouts[group]) {
         // ensure the helper has apps and settings data first:
         KeyboardHelper.getLayouts(activateKeyboard);
       } else {
@@ -385,15 +363,15 @@ var KeyboardManager = {
   },
 
   setKeyboardToShow: function km_setKeyboardToShow(group, index, launchOnly) {
-    if (!this.keyboardLayouts[group]) {
+    if (!this.inputLayouts.layouts[group]) {
       console.warn('trying to set a layout group to show that doesnt exist');
       return;
     }
     if (index === undefined) {
-      index = this.keyboardLayouts[group].activeLayout;
+      index = this.inputLayouts.layouts[group].activeLayout;
     }
     this._debug('set layout to display: type=' + group + ' index=' + index);
-    var layout = this.keyboardLayouts[group][index];
+    var layout = this.inputLayouts.layouts[group][index];
     this.inputFrameManager.launchFrame(layout);
     this.setShowingLayoutInfo(group, index, layout);
 
@@ -405,7 +383,7 @@ var KeyboardManager = {
       return;
     }
 
-    this.keyboardLayouts[group].activeLayout = index;
+    this.inputLayouts.layouts[group].activeLayout = index;
     KeyboardHelper.saveCurrentActiveLayout(group,
       layout.id, layout.manifestURL);
 
@@ -425,12 +403,12 @@ var KeyboardManager = {
    */
   showIMESwitcher: function km_showIMESwitcher() {
     var showed = this.showingLayoutInfo;
-    if (!this.keyboardLayouts[showed.type]) {
+    if (!this.inputLayouts.layouts[showed.type]) {
       return;
     }
 
     // Need to make the message in spec: "FirefoxOS - English"...
-    var current = this.keyboardLayouts[showed.type][showed.index];
+    var current = this.inputLayouts.layouts[showed.type][showed.index];
 
     this.imeSwitcher.show(current.appName, current.name);
   },
@@ -490,14 +468,14 @@ var KeyboardManager = {
     var oldLayout = showed.layout;
 
     this.switchChangeTimeout = setTimeout(function keyboardSwitchLayout() {
-      if (!this.keyboardLayouts[showed.type]) {
+      if (!this.inputLayouts.layouts[showed.type]) {
         showed.type = 'text';
       }
-      var length = this.keyboardLayouts[showed.type].length;
+      var length = this.inputLayouts.layouts[showed.type].length;
       var index = (showed.index + 1) % length;
-      this.keyboardLayouts[showed.type].activeLayout = index;
+      this.inputLayouts.layouts[showed.type].activeLayout = index;
 
-      var nextLayout = this.keyboardLayouts[showed.type][index];
+      var nextLayout = this.inputLayouts.layouts[showed.type][index];
 
       // Only resetShowingKeyboard() if the running layout is not the same app
       // to prevent flash of black when switching.
@@ -515,13 +493,13 @@ var KeyboardManager = {
 
     var self = this;
     var showedType = this.showingLayoutInfo.type;
-    var activeLayout = this.keyboardLayouts[showedType].activeLayout;
+    var activeLayout = this.inputLayouts.layouts[showedType].activeLayout;
     var _ = navigator.mozL10n.get;
     var actionMenuTitle = _('choose-option');
 
     this.switchChangeTimeout = setTimeout(function keyboardLayoutList() {
       var items = [];
-      self.keyboardLayouts[showedType].forEach(function(layout, index) {
+      self.inputLayouts.layouts[showedType].forEach(function(layout, index) {
         var item = {
           layoutName: layout.name,
           appName: layout.appName,
@@ -534,10 +512,10 @@ var KeyboardManager = {
 
       var menu = new ImeMenu(items, actionMenuTitle,
         function(selectedIndex) {
-        if (!self.keyboardLayouts[showedType]) {
+        if (!self.inputLayouts.layouts[showedType]) {
           showedType = 'text';
         }
-        self.keyboardLayouts[showedType].activeLayout = selectedIndex;
+        self.inputLayouts.layouts[showedType].activeLayout = selectedIndex;
         self.setKeyboardToShow(showedType, selectedIndex);
 
         // Hide the tray to show the app directly after
@@ -547,7 +525,7 @@ var KeyboardManager = {
         // Refresh the switcher, or the labled type and layout name
         // won't change.
       }, function() {
-        if (!self.keyboardLayouts[showedType]) {
+        if (!self.inputLayouts.layouts[showedType]) {
           showedType = 'text';
         }
 
