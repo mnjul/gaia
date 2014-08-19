@@ -162,6 +162,9 @@ var KeyboardManager = {
     this.inputFrameManager = new InputFrameManager(this);
     this.inputFrameManager.start();
 
+    this.inputLayouts = new InputLayouts(this);
+    this.inputLayouts.start();
+
     LazyLoader.load([
       'shared/js/keyboard_helper.js'
     ], function() {
@@ -179,7 +182,7 @@ var KeyboardManager = {
   // ^^^ BEGIN
 
   updateLayouts: function km_updateLayouts(layouts) {
-    // until
+    var enabledApps = this.inputLayouts.processLayouts(layouts);
 
     // Remove apps that are no longer enabled to clean up.
     Object.keys(this.inputFrameManager.runningLayouts).forEach(
@@ -189,6 +192,7 @@ var KeyboardManager = {
       }
     }, this);
 
+    // XXX extract process launch on boot 
     if (Object.keys(this.inputFrameManager.runningLayouts).length) {
       // There are already keyboard(s) being launched. We don't really care
       // if a default keyboard should be launch-on-boot.

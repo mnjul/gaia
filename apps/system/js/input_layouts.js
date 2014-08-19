@@ -20,7 +20,7 @@
   };
 
 
-  InputLayouts.prototype._transformLayout = function il_transformLayout() {
+  InputLayouts.prototype._transformLayout = function il_transformLayout(layout) {
     var transformedLayout = {
       id: layout.layoutId,
       origin: layout.app.origin,
@@ -47,9 +47,9 @@
     });
 
     return transformedLayout;
-  },
+  };
 
-  updateLayouts: function km_updateLayouts(layouts) {
+  InputLayouts.prototype.processLayouts = function il_processLayouts(layouts) {
     var enabledApps = new Set();
 
     var self = this;
@@ -61,13 +61,13 @@
       layout.inputManifest.types.filter(KeyboardHelper.isKeyboardType)
         .forEach(function(type) {
           carry[type] = carry[type] || [];
-          carry[type].push(self.kmul_transformLayout(layout));
+          carry[type].push(self._transformLayout(layout));
         });
 
       return carry;
     }
 
-    this.keyboardLayouts = layouts.reduce(reduceLayouts, {});
+    this._keyboardManager.keyboardLayouts = layouts.reduce(reduceLayouts, {});
 
     // bug 1035117:
     // at this moment, if the 'fallback' groups (managed by KeyboardHelper)
@@ -75,18 +75,18 @@
     // (for example, user enables only CJKV IMEs, and for 'password'
     //  we need to enable 'en')
     for (var group in KeyboardHelper.fallbackLayouts) {
-      if (!(group in this.keyboardLayouts)) {
+      if (!(group in this._keyboardManager.keyboardLayouts)) {
         var layout = KeyboardHelper.fallbackLayouts[group];
 
         enabledApps.add(layout.app.manifestURL);
 
         // XXX: init activelayout later
-        this.keyboardLayouts[group] = [self.kmul_transformLayout(layout)];
+        this.keyboardLayouts[group] = [self._transformLayout(layout)];
       }
     }
 
-    for(var group in this.keyboardLayouts) {
-      this.keyboardLayouts[group].activeLayout = 0;
+    for(var group in this._keyboardManager.keyboardLayouts) {
+      this._keyboardManager.keyboardLayouts[group].activeLayout = 0;
     }
 
     // XXX this should finish layout generation
@@ -94,11 +94,11 @@
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable
     var countLayouts = {};
-    Object.keys(this.keyboardLayouts).forEach(function(k) {
-      var typeTable = this.inputTypeTable[k];
+    Object.keys(this._keyboardManager.keyboardLayouts).forEach(function(k) {
+      var typeTable = this._keyboardManager.inputTypeTable[k];
       for (var i in typeTable) {
         var inputType = typeTable[i];
-        countLayouts[inputType] = this.keyboardLayouts[k].length;
+        countLayouts[inputType] = this._keyboardManager.keyboardLayouts[k].length;
       }
     }, this);
 
@@ -108,6 +108,8 @@
       layouts: countLayouts
     });
     window.dispatchEvent(event);
+
+    return enabledApps;
   }
 
   exports.InputLayouts = InputLayouts;
