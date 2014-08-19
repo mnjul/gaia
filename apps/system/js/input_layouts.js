@@ -33,6 +33,9 @@
      * }
      */
     this.layouts = {};
+
+    // A Set() of enabled KB apps
+    this._enabledApps = null;
   };
 
   InputLayouts.prototype.start = function il_start() {
@@ -73,12 +76,10 @@
     return transformedLayout;
   };
 
-  InputLayouts.prototype.processLayouts = function il_processLayouts(layouts) {
-    var enabledApps = new Set();
-
-    // XXX: split the reduce+foreach first
+  InputLayouts.prototype._insertLayouts =
+    function il_insertLayouts(layouts) {
     var reduceLayouts = function (carry, layout) {
-      enabledApps.add(layout.app.manifestURL);
+      this._enabledApps.add(layout.app.manifestURL);
       // add the layout to each type and return the carry
       layout.inputManifest.types.filter(KeyboardHelper.isKeyboardType)
         .forEach(function(type) {
@@ -90,31 +91,34 @@
     };
 
     this.layouts = layouts.reduce(reduceLayouts.bind(this), {});
+  };
 
+  InputLayouts.prototype._insertFallbackLayouts =
+    function il_insertFallbackLayouts(layouts) {
     // bug 1035117:
     // at this moment, if the 'fallback' groups (managed by KeyboardHelper)
     // doesn't have any layouts, inject the fallback layout into it.
     // (for example, user enables only CJKV IMEs, and for 'password'
     //  we need to enable 'en')
     Object.keys(KeyboardHelper.fallbackLayouts).filter(
+      // linter fails if I use "group" instead of "grp" here
       grp => !(grp in this.layouts)
     ).forEach(function (group) {
       var layout = KeyboardHelper.fallbackLayouts[group];
 
-      enabledApps.add(layout.app.manifestURL);
+      this._enabledApps.add(layout.app.manifestURL);
 
       this.layouts[group] = [this._transformLayout(layout)];
     }, this);
+  };
 
-    for (var group in this.layouts) {
-      this.layouts[group].activeLayout = 0;
-    }
-
+  InputLayouts.prototype._emitLayoutsCount = function il_emitLayoutsCount() {
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable
     var countLayouts = {};
     Object.keys(this.layouts).forEach(function(group) {
       var types = this._keyboardManager.inputTypeTable[group];
+
       types.forEach(function(type) {
         countLayouts[type] = this.layouts[group].length;
       }, this);
@@ -126,8 +130,22 @@
       layouts: countLayouts
     });
     window.dispatchEvent(event);
+  };
 
-    return enabledApps;
+  InputLayouts.prototype.processLayouts = function il_processLayouts(layouts) {
+    this._enabledApps = Set();
+
+    this._insertLayouts(layouts);
+    this._insertFallbackLayouts();
+
+    // some initialization
+    for (var group in this.layouts) {
+      this.layouts[group].activeLayout = 0;
+    }
+
+    this._emitLayoutsCount();
+
+    return this._enabledApps;
   };
 
   exports.InputLayouts = InputLayouts;
