@@ -1,3 +1,5 @@
+/* global KeyboardHelper */
+
 'use strict';
 
 (function(exports) {
@@ -19,8 +21,8 @@
 
   };
 
-
-  InputLayouts.prototype._transformLayout = function il_transformLayout(layout) {
+  InputLayouts.prototype._transformLayout =
+    function il_transformLayout(layout) {
     var transformedLayout = {
       id: layout.layoutId,
       origin: layout.app.origin,
@@ -29,9 +31,9 @@
     };
 
     // tiny helper - bound to the manifests
-    function getName() {
+    var getName = function () {
       return this.name;
-    }
+    };
 
     // define properties for name that resolve at display time
     // to the correct language via the ManifestHelper
@@ -80,15 +82,15 @@
 
         enabledApps.add(layout.app.manifestURL);
 
-        // XXX: init activelayout later
         this.keyboardLayouts[group] = [self._transformLayout(layout)];
       }
     }
 
-    for(var group in this._keyboardManager.keyboardLayouts) {
+    for (group in this._keyboardManager.keyboardLayouts) {
       this._keyboardManager.keyboardLayouts[group].activeLayout = 0;
     }
 
+    // XXX: reorg this
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable
     var countLayouts = {};
@@ -96,7 +98,8 @@
       var typeTable = this._keyboardManager.inputTypeTable[k];
       for (var i in typeTable) {
         var inputType = typeTable[i];
-        countLayouts[inputType] = this._keyboardManager.keyboardLayouts[k].length;
+        countLayouts[inputType] =
+          this._keyboardManager.keyboardLayouts[k].length;
       }
     }, this);
 
@@ -108,7 +111,7 @@
     window.dispatchEvent(event);
 
     return enabledApps;
-  }
+  };
 
   exports.InputLayouts = InputLayouts;
 

@@ -216,8 +216,6 @@ var KeyboardManager = {
     this.tryLaunchOnBoot();
   },
 
-  // ^^^ END
-
   resizeKeyboard: function km_resizeKeyboard(evt) {
     // Ignore mozbrowserresize event while keyboard Frame is transitioning out.
     var transitionState = this.transitionManager.currentState;
