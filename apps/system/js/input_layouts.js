@@ -3,7 +3,7 @@
 (function(exports) {
 
   /**
-   * InputLayouts is responsible for processing and holding layouts returned
+   * InputLayouts is responsible for processing and bookkeeping layouts returned
    * from KeyboardHelper for use by KeyboardManager.
    */
   var InputLayouts = function(keyboardManager) {
@@ -88,8 +88,6 @@
     for(var group in this._keyboardManager.keyboardLayouts) {
       this._keyboardManager.keyboardLayouts[group].activeLayout = 0;
     }
-
-    // XXX this should finish layout generation
 
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable

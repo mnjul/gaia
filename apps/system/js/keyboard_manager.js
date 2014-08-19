@@ -178,21 +178,7 @@ var KeyboardManager = {
     return this.transitionManager.occupyingHeight;
   },
 
-  // XXX: Functions related to layouts should be moved to another module?
-  // ^^^ BEGIN
-
-  updateLayouts: function km_updateLayouts(layouts) {
-    var enabledApps = this.inputLayouts.processLayouts(layouts);
-
-    // Remove apps that are no longer enabled to clean up.
-    Object.keys(this.inputFrameManager.runningLayouts).forEach(
-      function removeApp(manifestURL) {
-      if (!enabledApps.has(manifestURL)) {
-        this.removeKeyboard(manifestURL);
-      }
-    }, this);
-
-    // XXX extract process launch on boot 
+  tryLaunchOnBoot: function km_launchOnBoot() {
     if (Object.keys(this.inputFrameManager.runningLayouts).length) {
       // There are already keyboard(s) being launched. We don't really care
       // if a default keyboard should be launch-on-boot.
@@ -210,11 +196,24 @@ var KeyboardManager = {
 
       // if there are still no keyboards running at this point -
       // set text to show, but don't bring it to the foreground.
-      if (launchOnBoot &&
-          !Object.keys(this.inputFrameManager.runningLayouts).length) {
+      if (launchOnBoot) {
         this.setKeyboardToShow('text', undefined, true);
       }
     }).bind(this);
+  },
+
+  updateLayouts: function km_updateLayouts(layouts) {
+    var enabledApps = this.inputLayouts.processLayouts(layouts);
+
+    // Remove apps that are no longer enabled to clean up.
+    Object.keys(this.inputFrameManager.runningLayouts).forEach(
+      function removeApp(manifestURL) {
+      if (!enabledApps.has(manifestURL)) {
+        this.removeKeyboard(manifestURL);
+      }
+    }, this);
+
+    this.tryLaunchOnBoot();
   },
 
   // ^^^ END
