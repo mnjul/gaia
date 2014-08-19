@@ -77,7 +77,8 @@
   };
 
   InputLayouts.prototype._insertLayouts =
-    function il_insertLayouts(layouts) {
+    function il_insertLayouts(appLayouts) {
+    // XXXXXXX
     var reduceLayouts = function (carry, layout) {
       this._enabledApps.add(layout.app.manifestURL);
       // add the layout to each type and return the carry
@@ -90,11 +91,11 @@
       return carry;
     };
 
-    this.layouts = layouts.reduce(reduceLayouts.bind(this), {});
+    this.layouts = appLayouts.reduce(reduceLayouts.bind(this), {});
   };
 
   InputLayouts.prototype._insertFallbackLayouts =
-    function il_insertFallbackLayouts(layouts) {
+    function il_insertFallbackLayouts() {
     // bug 1035117:
     // at this moment, if the 'fallback' groups (managed by KeyboardHelper)
     // doesn't have any layouts, inject the fallback layout into it.
@@ -132,10 +133,11 @@
     window.dispatchEvent(event);
   };
 
-  InputLayouts.prototype.processLayouts = function il_processLayouts(layouts) {
+  InputLayouts.prototype.processLayouts =
+    function il_processLayouts(appLayouts) {
     this._enabledApps = Set();
 
-    this._insertLayouts(layouts);
+    this._insertLayouts(appLayouts);
     this._insertFallbackLayouts();
 
     // some initialization
