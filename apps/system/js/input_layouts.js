@@ -112,7 +112,17 @@
 
     // Let chrome know about how many keyboards we have
     // need to expose all input type from inputTypeTable
-    var countLayouts = {};
+    var countLayouts = Object.keys(this.layouts).reduce(
+      function(carry, currentGroup) {
+        var types = this._keyboardManager.inputTypeTable[currentGroup];
+        types.forEach(function(type) {
+          carry[type] = this.layouts[currentGroup].length;
+        }, this);
+        return carry;
+      }.bind(this), {});
+
+
+
     Object.keys(this.layouts).forEach(function(group) {
       var types = this._keyboardManager.inputTypeTable[group];
       types.forEach(function(type) {
