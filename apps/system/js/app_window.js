@@ -1614,7 +1614,7 @@
    */
   AppWindow.prototype.setFrameBackground =
     function aw_setFrameBackground() {
-      if (!this.isHomescreen &&
+      if (!this.isHomescreen && !this.isInputMethod &&
           !this.loaded && !this.splashed && this.element) {
 
         if (this._splash) {
