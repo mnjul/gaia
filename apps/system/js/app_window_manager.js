@@ -1,4 +1,4 @@
-/* global SettingsListener, homescreenWindowManager, KeyboardManager,
+/* global SettingsListener, homescreenWindowManager, inputWindowManager,
           layoutManager, System, NfcHandler, rocketbar, ShrinkingUI */
 'use strict';
 
@@ -196,10 +196,10 @@
 
         if (this.continuousTransition) {
           // Do keyboard transition.
-          KeyboardManager.hideKeyboard();
+          inputWindowManager.hideInputWindow();
         } else {
           // Hide keyboard immediately.
-          KeyboardManager.hideKeyboardImmediately();
+          inputWindowManager.hideInputWindowImmediately();
         }
       } else if (rocketbar.active) {
         // Wait for the rocketbar to close

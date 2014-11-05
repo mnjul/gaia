@@ -1,7 +1,7 @@
 'use strict';
 
-/* global SettingsListener, IMESwitcher, ImeMenu, KeyboardHelper,
-          InputWindowManager, InputLayouts, LazyLoader */
+/* global IMESwitcher, ImeMenu, KeyboardHelper, inputWindowManager,
+          InputLayouts, LazyLoader, System */
 
 // If we get a inputmethod-contextchange chrome event for an element with
 // one of these types, we'll just ignore it.
@@ -59,53 +59,22 @@ var KeyboardManager = {
       console.log('[Keyboard Manager] ' + msg);
     }
   },
-  isOutOfProcessEnabled: false,
-  totalMemory: 0,
+
+  isIgnoredInputType: function km_isIgnoredInputType(type) {
+    return type in IGNORED_INPUT_TYPES;
+  },
 
   init: function km_init() {
-    // 3rd-party keyboard apps must be run out-of-process.
-    SettingsListener.observe('keyboard.3rd-party-app.enabled', true,
-      function(value) {
-        this.isOutOfProcessEnabled = value;
-      }.bind(this));
-
-    if ('getFeature' in navigator) {
-      navigator.getFeature('hardware.memory').then(function(mem) {
-        this.totalMemory = mem;
-      }.bind(this), function() {
-        console.error('KeyboardManager: ' +
-          'Failed to retrive total memory of the device.');
-      });
-    }
-
     this.imeSwitcher = new IMESwitcher();
     this.imeSwitcher.ontap = this._showImeMenu.bind(this);
     this.imeSwitcher.start();
 
-    // For Bug 812115: hide the keyboard when the app is closed here,
-    // since it would take a longer round-trip to receive focuschange
-    // Also in Bug 856692 we realise that we need to close the keyboard
-    // when an inline activity goes away.
-    window.addEventListener('activityrequesting', this);
-    window.addEventListener('activityopening', this);
-    window.addEventListener('activityclosing', this);
-    window.addEventListener('attentionrequestopen', this);
-    window.addEventListener('attentionrecovering', this);
-    window.addEventListener('attentionopening', this);
-    window.addEventListener('attentionopened', this);
-    window.addEventListener('attentionclosing', this);
-    window.addEventListener('attentionclosed', this);
-    window.addEventListener('notification-clicked', this);
-    window.addEventListener('applicationsetupdialogshow', this);
-    window.addEventListener('mozmemorypressure', this);
-    window.addEventListener('sheets-gesture-begin', this);
-    window.addEventListener('lockscreen-appopened', this);
+    window.addEventListener('keyboardhide', this);
+    window.addEventListener('keyboardready', this);
+    window.addEventListener('keyboardkilled', this);
 
     // To handle keyboard layout switching
     window.addEventListener('mozChromeEvent', this);
-
-    this.inputWindowManager = new InputWindowManager(this);
-    this.inputWindowManager.start();
 
     this.inputLayouts = new InputLayouts(this, TYPE_GROUP_MAPPING);
     this.inputLayouts.start();
@@ -120,13 +89,8 @@ var KeyboardManager = {
     }.bind(this));
   },
 
-  // XXX: in the future, call InputWindowManager.getHeight() directly
-  getHeight: function kn_getHeight() {
-    return this.inputWindowManager.getHeight();
-  },
-
   _tryLaunchOnBoot: function km_launchOnBoot() {
-    if (this.inputWindowManager.getLoadedManifestURLs().length) {
+    if (inputWindowManager.getLoadedManifestURLs().length) {
       // There are already keyboard(s) being launched. We don't really care
       // if a default keyboard should be launch-on-boot.
       return;
@@ -145,7 +109,7 @@ var KeyboardManager = {
       // if there are still no keyboards running at this point -
       // set text to show, but don't bring it to the foreground.
       if (launchOnBoot &&
-          !this.inputWindowManager.getLoadedManifestURLs().length) {
+          !inputWindowManager.getLoadedManifestURLs().length) {
         this._setKeyboardToShow('text', undefined, true);
       }
     }).bind(this);
@@ -154,19 +118,24 @@ var KeyboardManager = {
   _updateLayouts: function km_updateLayouts(layouts) {
     var enabledApps = this.inputLayouts.processLayouts(layouts);
 
+    var manifestURLsToRemove =
+      inputWindowManager.getLoadedManifestURLs().filter(
+        manifestURL => !enabledApps.has(manifestURL)
+      );
+
     // Remove apps that are no longer enabled to clean up.
-    this.inputWindowManager.getLoadedManifestURLs().forEach(
-      function removeApp(manifestURL) {
-      if (!enabledApps.has(manifestURL)) {
-        this.removeKeyboard(manifestURL);
+    System.publish('keyboardlayoutsremoved', {
+      manifestURLs: manifestURLsToRemove
+    });
+
+    manifestURLsToRemove.forEach(manifestURL => {
+      if (this._showingLayoutInfo.layout &&
+          this._showingLayoutInfo.layout.manifestURL === manifestURL) {
+        this._resetShowingLayoutInfo();
       }
-    }, this);
+    });
 
     this._tryLaunchOnBoot();
-  },
-
-  _onKeyboardReady: function km_onKeyboardLaunched() {
-    this._showIMESwitcher();
   },
 
   // Decide the keyboard layout for the specific group and show it
@@ -208,14 +177,12 @@ var KeyboardManager = {
 
     // Skip the <select> element and inputs with type of date/time,
     // handled in system app for now
-    if (!type || type in IGNORED_INPUT_TYPES) {
-      this.hideKeyboard();
+    if (!type || this.isIgnoredInputType(type)) {
       return;
     }
 
     if ('blur' === type) {
       this._debug('get blur event');
-      this.hideKeyboard();
       this.imeSwitcher.hide();
     } else {
       // display the keyboard for that group decided by input type
@@ -228,41 +195,6 @@ var KeyboardManager = {
 
   handleEvent: function km_handleEvent(evt) {
     switch (evt.type) {
-      case 'attentionrequestopen':
-      case 'attentionrecovering':
-      case 'attentionopening':
-      case 'attentionclosing':
-      case 'attentionopened':
-      case 'attentionclosed':
-      case 'notification-clicked':
-      case 'applicationsetupdialogshow':
-      case 'activityrequesting':
-      case 'activityopening':
-      case 'activityclosing':
-        this.hideKeyboardImmediately();
-        break;
-      case 'mozmemorypressure':
-        // Memory pressure event. If a keyboard is loaded but not opened,
-        // get rid of it.
-        // We only do that when we don't run keyboards OOP.
-        this._debug('mozmemorypressure event');
-        if (!this.isOutOfProcessEnabled &&
-            !this.inputWindowManager.hasActiveKeyboard()) {
-          this.inputWindowManager.getLoadedManifestURLs().forEach(
-            this.removeKeyboard, this
-          );
-          this._debug('mozmemorypressure event; keyboard removed');
-        }
-        break;
-      case 'lockscreen-appopened':
-        /* falls through */
-      case 'sheets-gesture-begin':
-        if (this.inputWindowManager.hasActiveKeyboard()) {
-          // Instead of hideKeyboard(), we should removeFocus() here.
-          // (and, removing the focus cause Gecko to ask us to hideKeyboard())
-          navigator.mozInputMethod.removeFocus();
-        }
-        break;
       case 'mozChromeEvent':
         switch (evt.detail.type) {
           case 'inputmethod-showall':
@@ -276,24 +208,22 @@ var KeyboardManager = {
             break;
         }
         break;
+      case 'keyboardhide':
+        this._resetShowingLayoutInfo();
+        break;
+      case 'keyboardready':
+        this._showIMESwitcher();
+        break;
+      case 'keyboardkilled':
+        this._onKeyboardKilled(evt.detail.manifestURL);
+        break;
     }
   },
 
-  removeKeyboard: function km_removeKeyboard(manifestURL, handleOOM) {
-    var revokeShowedGroup = null;
-    if (this._showingLayoutInfo.layout &&
-      this._showingLayoutInfo.layout.manifestURL === manifestURL) {
-      revokeShowedGroup = this._showingLayoutInfo.group;
-      this.hideKeyboard();
-    }
-
-    this.inputWindowManager.removeKeyboard(manifestURL);
-
-    this._resetShowingLayoutInfo();
-
-    if (handleOOM && revokeShowedGroup !== null) {
-      this._setKeyboardToShow(revokeShowedGroup);
-    }
+  // a showing keyboard instance was OOM-killed. we need to relaunch something.
+  _onKeyboardKilled: function km_onKeyboardKilled(manifestURL) {
+    var revokeShowedGroup = this._showingLayoutInfo.group;
+    this._setKeyboardToShow(revokeShowedGroup);
   },
 
   _setKeyboardToShow: function km_setKeyboardToShow(group, index, launchOnly) {
@@ -308,9 +238,9 @@ var KeyboardManager = {
     var layout = this.inputLayouts.layouts[group][index];
 
     if (launchOnly) {
-      this.inputWindowManager.preloadInputWindow(layout);
+      inputWindowManager.preloadInputWindow(layout);
     } else {
-      this.inputWindowManager.showInputWindow(layout);
+      inputWindowManager.showInputWindow(layout);
     }
 
     this._setShowingLayoutInfo(group, index, layout);
@@ -336,16 +266,6 @@ var KeyboardManager = {
     var current = this.inputLayouts.layouts[showed.group][showed.index];
 
     this.imeSwitcher.show(current.appName, current.name);
-  },
-
-  hideKeyboard: function km_hideKeyboard() {
-    this.inputWindowManager.hideInputWindow();
-    this._resetShowingLayoutInfo();
-  },
-
-  hideKeyboardImmediately: function km_hideImmediately() {
-    this.inputWindowManager.hideInputWindowImmediately();
-    this._resetShowingLayoutInfo();
   },
 
   _resetShowingLayoutInfo: function km_resetShowingLayoutInfo() {
@@ -423,7 +343,7 @@ var KeyboardManager = {
           };
         });
 
-      this.hideKeyboard();
+      inputWindowManager.hideInputWindow();
 
       var menu = new ImeMenu(items, actionMenuTitle,
         this._imeMenuCallback.bind(this, showedGroup),
