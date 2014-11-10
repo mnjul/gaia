@@ -49,20 +49,9 @@
     this.isOutOfProcessEnabled = false;
     this._totalMemory = 0;
 
-    // 3rd-party keyboard apps must be run out-of-process.
-    SettingsListener.observe('keyboard.3rd-party-app.enabled', true,
-      value => {
-        this.isOutOfProcessEnabled = value;
-      });
+    this._getMemory();
 
-    if ('getFeature' in navigator) {
-      navigator.getFeature('hardware.memory').then(mem => {
-        this._totalMemory = mem;
-      }, () => {
-        console.error('InputWindowManager: ' +
-          'Failed to retrieve total memory of the device.');
-      });
-    }
+    this._oopSettingCallbackBind = null;
 
     /*
      * The collection of loaded InputWindows.
@@ -102,6 +91,11 @@
   };
 
   InputWindowManager.prototype.start = function iwm_start() {
+    // 3rd-party keyboard apps must be run out-of-process.
+    this._oopSettingCallbackBind = this._oopSettingCallback.bind(this);
+    SettingsListener.observe('keyboard.3rd-party-app.enabled', true,
+      this._oopSettingCallbackBind);
+
     window.addEventListener('input-appopened', this);
     window.addEventListener('input-appclosing', this);
     window.addEventListener('input-appclosed', this);
@@ -132,6 +126,10 @@
   };
 
   InputWindowManager.prototype.stop = function iwm_stop() {
+    SettingsListener.unobserve('keyboard.3rd-party-app.enabled',
+      this._oopSettingCallbackBind);
+    this._oopSettingCallbackBind = null;
+
     window.removeEventListener('input-appopened', this);
     window.removeEventListener('input-appclosing', this);
     window.removeEventListener('input-appclosed', this);
@@ -267,6 +265,22 @@
         }
         break;
     }
+  };
+
+  InputWindowManager.prototype._getMemory = function iwm_getMemory() {
+    if ('getFeature' in navigator) {
+      navigator.getFeature('hardware.memory').then(mem => {
+        this._totalMemory = mem;
+      }, () => {
+        console.error('InputWindowManager: ' +
+          'Failed to retrieve total memory of the device.');
+      });
+    }
+  };
+
+  InputWindowManager.prototype._oopSettingCallback =
+  function iwm_oopSettingCallback(value) {
+    this.isOutOfProcessEnabled = value;
   };
 
   InputWindowManager.prototype._removeInputApp =
