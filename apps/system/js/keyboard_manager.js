@@ -60,10 +60,6 @@ var KeyboardManager = {
     }
   },
 
-  isIgnoredInputType: function km_isIgnoredInputType(type) {
-    return type in IGNORED_INPUT_TYPES;
-  },
-
   init: function km_init() {
     this.imeSwitcher = new IMESwitcher();
     this.imeSwitcher.ontap = this._showImeMenu.bind(this);
@@ -177,12 +173,14 @@ var KeyboardManager = {
 
     // Skip the <select> element and inputs with type of date/time,
     // handled in system app for now
-    if (!type || this.isIgnoredInputType(type)) {
+    if (!type || type in IGNORED_INPUT_TYPES) {
+      inputWindowManager.hideInputWindow();
       return;
     }
 
     if ('blur' === type) {
       this._debug('get blur event');
+      inputWindowManager.hideInputWindow();
       this.imeSwitcher.hide();
     } else {
       // display the keyboard for that group decided by input type

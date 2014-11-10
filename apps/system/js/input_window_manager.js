@@ -1,7 +1,6 @@
 'use strict';
 
-/* global applications, System, InputWindow, SettingsListener,
-          KeyboardManager */
+/* global applications, System, InputWindow, SettingsListener */
 
 (function(exports) {
 
@@ -122,7 +121,6 @@
     window.addEventListener('lockscreen-appopened', this);
     window.addEventListener('mozmemorypressure', this);
     window.addEventListener('keyboardlayoutsremoved', this);
-    window.addEventListener('mozChromeEvent', this);
   };
 
   InputWindowManager.prototype.stop = function iwm_stop() {
@@ -152,7 +150,6 @@
     window.removeEventListener('lockscreen-appopened', this);
     window.removeEventListener('mozmemorypressure', this);
     window.removeEventListener('keyboardlayoutsremoved', this);
-    window.removeEventListener('mozChromeEvent', this);
   };
 
   InputWindowManager.prototype.handleEvent = function iwm_handleEvent(evt) {
@@ -251,18 +248,6 @@
           }
           this._removeInputApp(manifestURL);
         });
-        break;
-      case 'mozChromeEvent':
-        if ('inputmethod-contextchange' === evt.detail.type) {
-          var type = evt.detail.inputType;
-          // If it's the type we handle in system app (<select> element and
-          // inputs with type of date/time), we need to hide any showing window
-          // just as when we get blur
-          if (!type || KeyboardManager.isIgnoredInputType(type) ||
-              'blur' === type) {
-            this.hideInputWindow();
-          }
-        }
         break;
     }
   };
