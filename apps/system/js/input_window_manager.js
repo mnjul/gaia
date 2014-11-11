@@ -166,7 +166,9 @@
         }
         break;
       case 'input-appready':
-        KeyboardManager._onKeyboardReady();
+        if (inputWindow === this._currentWindow) {
+          KeyboardManager._onKeyboardReady();
+        }
         // don't bother close the last window if it's been killed
         // (happens when last window was replaced due to OOM-kill)
         if (this._lastWindow && !this._lastWindow.isDead()) {

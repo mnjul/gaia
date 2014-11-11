@@ -216,6 +216,125 @@ suite('InputWindowManager', function() {
 
       assert.isTrue(stubRemoveInputApp.calledWith(inputWindow.manifestURL));
     });
+
+    suite('External events for hideInputWindowImmediately', function() {
+      var stubHideInputWindowImmediately;
+      setup(function() {
+        stubHideInputWindowImmediately =
+          this.sinon.stub(manager, 'hideInputWindowImmediately');
+      });
+
+      var testForHideImmeidately = function(evtType) {
+        test(evtType, function() {
+          manager.handleEvent(new CustomEvent(evtType));
+
+          assert.isTrue(stubHideInputWindowImmediately.called);
+        });
+      };
+
+      ['activityrequesting', 'activityopening', 'activityclosing',
+       'attentionrequestopen', 'attentionrecovering', 'attentionopening',
+       'attentionclosing', 'attentionopened', 'attentionclosed',
+       'notification-clicked', 'applicationsetupdialogshow'].forEach(evtType =>
+      {
+        testForHideImmeidately(evtType);
+      });
+    });
+
+    suite('External events for removing input focus', function() {
+      var stubHasActiveInputApp;
+      var realInputMethod;
+
+      setup(function() {
+        stubHasActiveInputApp = this.sinon.stub(manager, '_hasActiveInputApp');
+
+        realInputMethod = window.navigator.mozInputMethod;
+        navigator.mozInputMethod = {
+          removeFocus: this.sinon.stub()
+        };
+      });
+
+      teardown(function() {
+        navigator.mozInputMethod = realInputMethod;
+      });
+
+      var testForRemoveFocus = function(evtType) {
+        test(evtType + ' do nothing if there is no active keyboard',
+        function() {
+          stubHasActiveInputApp.returns(false);
+
+          manager.handleEvent(new CustomEvent(evtType));
+
+          assert.isFalse(navigator.mozInputMethod.removeFocus.called);
+        });
+
+        test(evtType + ' remove focus if there is active keyboard', function() {
+          stubHasActiveInputApp.returns(true);
+
+          manager.handleEvent(new CustomEvent(evtType));
+
+          assert.isTrue(navigator.mozInputMethod.removeFocus.called);
+        });
+      };
+
+      ['lockscreen-appopened', 'sheets-gesture-begin'].forEach(evtType => {
+        testForRemoveFocus(evtType);
+      });
+    });
+
+    suite('mozmemorypressure', function() {
+      var stubHasActiveInputApp;
+      var stubRemoveInputApp;
+      var stubGetLoadedManifestURLs;
+
+      setup(function() {
+        stubHasActiveInputApp = this.sinon.stub(manager, '_hasActiveInputApp');
+        stubGetLoadedManifestURLs =
+          this.sinon.stub(manager, 'getLoadedManifestURLs');
+        stubRemoveInputApp = this.sinon.stub(manager, '_removeInputApp');
+      });
+
+      test('Do nothing if oop is enabled', function() {
+        manager.isOutOfProcessEnabled = true;
+
+        manager.handleEvent(new CustomEvent('mozmemorypressure'));
+
+        assert.isFalse(stubGetLoadedManifestURLs.called);
+        assert.isFalse(stubRemoveInputApp.called);
+      });
+
+      test('Do nothing if we have active app', function() {
+        stubHasActiveInputApp.returns(true);
+        
+        manager.handleEvent(new CustomEvent('mozmemorypressure'));
+
+        assert.isFalse(stubGetLoadedManifestURLs.called);
+        assert.isFalse(stubRemoveInputApp.called);
+      });
+
+      test('Actually removeInputApp', function() {
+        manager.isOutOfProcessEnabled = false;
+        stubHasActiveInputApp.returns(false);
+
+        var manifestURLs = [
+          'app://keyboard1.gaiamobile.org/manifest.webapp',
+          'app://keyboard2.gaiamobile.org/manifest.webapp',
+          'app://keyboard3.gaiamobile.org/manifest.webapp'
+        ];
+
+        stubGetLoadedManifestURLs.returns(manifestURLs);
+
+        manager.handleEvent(new CustomEvent('mozmemorypressure'));
+
+        assert.equal(stubRemoveInputApp.callCount, manifestURLs.length,
+          '_removeInputApp should be called as many times as count of KBs');
+
+        manifestURLs.forEach(manifestURL => {
+          assert.isTrue(stubRemoveInputApp.calledWith(manifestURL),
+            '_removeInputApp was not called with ' + manifestURL);
+        });
+      });
+    });
   });
 
   test('removeInputApp', function() {

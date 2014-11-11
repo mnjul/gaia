@@ -5,7 +5,6 @@
 
 require('/shared/test/unit/mocks/mock_lazy_loader.js');
 require('/shared/test/unit/mocks/mock_keyboard_helper.js');
-require('/shared/test/unit/mocks/mock_settings_listener.js');
 require('/shared/test/unit/mocks/mock_navigator_moz_settings.js');
 require('/shared/test/unit/mocks/mock_l10n.js');
 require('/test/unit/mock_applications.js');
@@ -17,7 +16,6 @@ require('/js/input_window_manager.js');
 require('/js/keyboard_manager.js');
 
 var mocksHelperForKeyboardManager = new MocksHelper([
-    'SettingsListener',
     'KeyboardHelper',
     'LazyLoader',
     'Applications',
@@ -28,15 +26,6 @@ var mocksHelperForKeyboardManager = new MocksHelper([
 
 suite('KeyboardManager', function() {
   var SWITCH_CHANGE_DELAY = 20;
-
-  function trigger(event, detail) {
-    if (!detail) {
-      detail = {};
-    }
-    var evt = document.createEvent('CustomEvent');
-    evt.initCustomEvent(event, true, false, detail);
-    window.dispatchEvent(evt);
-  }
 
   function inputChangeEvent(inputType) {
     return new CustomEvent('mozChromeEvent', {
@@ -63,24 +52,17 @@ suite('KeyboardManager', function() {
   mocksHelperForKeyboardManager.attachTestHelpers();
 
   var realMozSettings = null;
-  var realKeyboard = null;
   var realGetFeature = null;
 
   suiteSetup(function() {
     document.body.innerHTML += '<div id="run-container"></div>';
     navigator.mozSettings = MockNavigatorSettings;
 
-    realKeyboard = window.navigator.mozInputMethod;
-    window.navigator.mozInputMethod = {
-      removeFocus: function() {}
-    };
-
     realGetFeature = window.navigator.getFeature;
   });
 
   suiteTeardown(function() {
     navigator.mozSettings = realMozSettings;
-    window.navigator.mozInputMethod = realKeyboard;
     window.navigator.getFeature = realGetFeature;
   });
 
@@ -608,80 +590,6 @@ suite('KeyboardManager', function() {
       KeyboardManager.removeKeyboard(fakeFrame_A.manifestURL, true);
       sinon.assert.callCount(hideKeyboard, 1);
       assert.ok(_setKeyboardToShow.calledWith('text'));
-    });
-  });
-
-  suite('Event handler', function() {
-    var hideKeyboardImmediately, removeKeyboard, hideKeyboard;
-    setup(function() {
-      hideKeyboard = this.sinon.stub(KeyboardManager, 'hideKeyboard');
-      hideKeyboardImmediately =
-            this.sinon.stub(KeyboardManager, 'hideKeyboardImmediately');
-      removeKeyboard = this.sinon.stub(KeyboardManager, 'removeKeyboard');
-      this.sinon.stub(KeyboardManager, '_showIMESwitcher');
-    });
-
-    test('attentionrequestopen event', function() {
-      trigger('attentionrequestopen');
-
-      sinon.assert.callCount(hideKeyboardImmediately, 1);
-    });
-
-    test('attentionrecovering event', function() {
-      trigger('attentionrecovering');
-
-      sinon.assert.callCount(hideKeyboardImmediately, 1);
-    });
-
-    test('activityclosing event', function() {
-      trigger('activityclosing');
-      assert.ok(hideKeyboardImmediately.called);
-    });
-
-    test('activityopening event', function() {
-      trigger('activityopening');
-      assert.ok(hideKeyboardImmediately.called);
-    });
-
-    test('activityrequesting event', function() {
-      trigger('activityrequesting');
-      assert.ok(hideKeyboardImmediately.called);
-    });
-
-    test('applicationsetupdialogshow event', function() {
-      trigger('applicationsetupdialogshow');
-      assert.ok(hideKeyboardImmediately.called);
-    });
-
-    test('notification clicked event', function() {
-      trigger('notification-clicked');
-      assert.ok(hideKeyboardImmediately.called);
-    });
-
-    test('sheets-gesture-begin event: do nothing if no keyboard', function() {
-      var spy = this.sinon.spy(navigator.mozInputMethod, 'removeFocus');
-      trigger('sheets-gesture-begin');
-      assert.ok(spy.notCalled);
-    });
-
-    test('sheets-gesture-begin event: hide keyboard if needed', function() {
-      inputWindowManager.hasActiveKeyboard.returns(true);
-      var spy = this.sinon.spy(navigator.mozInputMethod, 'removeFocus');
-      trigger('sheets-gesture-begin');
-      sinon.assert.calledOnce(spy);
-    });
-
-    test('lock event: do nothing if no keyboard', function() {
-      var spy = this.sinon.spy(navigator.mozInputMethod, 'removeFocus');
-      trigger('lockscreen-appopened');
-      assert.ok(spy.notCalled);
-    });
-
-    test('lock event: hide keyboard if needed', function() {
-      inputWindowManager.hasActiveKeyboard.returns(true);
-      var spy = this.sinon.spy(navigator.mozInputMethod, 'removeFocus');
-      trigger('lockscreen-appopened');
-      sinon.assert.calledOnce(spy);
     });
   });
 
