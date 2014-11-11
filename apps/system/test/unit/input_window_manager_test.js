@@ -383,6 +383,45 @@ suite('InputWindowManager', function() {
     );
   });
 
+  test('onInputLayoutsRemoved', function() {
+    var manifestURLs1 = [
+      'app://keyboard1.gaiamobile.org/manifest.webapp',
+      'app://keyboard2.gaiamobile.org/manifest.webapp',
+      'app://keyboard3.gaiamobile.org/manifest.webapp'
+    ];
+
+    var manifestURLs2 = [
+      'app://keyboard4.gaiamobile.org/manifest.webapp',
+      'app://keyboard5.gaiamobile.org/manifest.webapp',
+      'app://keyboard6.gaiamobile.org/manifest.webapp'
+    ];
+
+    manager._currentWindow = new InputWindow();
+    manager._currentWindow.manifestURL =
+      'app://keyboard5.gaiamobile.org/manifest.webapp';
+
+    var stubHideInputWindow = this.sinon.stub(manager, 'hideInputWindow');
+    var stubRemoveInputApp = this.sinon.stub(manager, '_removeInputApp');
+
+    // removed apps do not include current window
+    manager._onInputLayoutsRemoved(manifestURLs1);
+    assert.isFalse(stubHideInputWindow.called);
+
+    manifestURLs1.forEach(manifestURL => {
+      assert.isTrue(stubRemoveInputApp.calledWith(manifestURL),
+        manifestURL + ' was not passed to removeInputApp');
+    });
+
+    // removed apps include current window
+    manager._onInputLayoutsRemoved(manifestURLs2);
+    assert.isTrue(stubHideInputWindow.calledOnce);
+
+    manifestURLs1.forEach(manifestURL => {
+      assert.isTrue(stubRemoveInputApp.calledWith(manifestURL),
+        manifestURL + ' was not passed to removeInputApp');
+    });
+  });
+
   test('getHeight', function() {
     manager._currentWindow = new InputWindow();
     manager._currentWindow.height = 300;

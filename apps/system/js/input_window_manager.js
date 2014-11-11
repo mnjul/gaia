@@ -260,7 +260,7 @@
   function iwm_onInputLayoutsRemoved(manifestURLs) {
     manifestURLs.forEach(manifestURL => {
       if (this._currentWindow &&
-          this._currentWindow.manifest === manifestURL) {
+          this._currentWindow.manifestURL === manifestURL) {
         this.hideInputWindow();
       }
       this._removeInputApp(manifestURL);
