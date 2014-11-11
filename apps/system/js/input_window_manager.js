@@ -1,6 +1,6 @@
 'use strict';
 
-/* global applications, System, InputWindow, SettingsListener */
+/* global applications, InputWindow, SettingsListener, KeyboardManager */
 
 (function(exports) {
 
@@ -120,7 +120,6 @@
     window.addEventListener('sheets-gesture-begin', this);
     window.addEventListener('lockscreen-appopened', this);
     window.addEventListener('mozmemorypressure', this);
-    window.addEventListener('keyboardlayoutsremoved', this);
   };
 
   InputWindowManager.prototype.stop = function iwm_stop() {
@@ -149,7 +148,6 @@
     window.removeEventListener('sheets-gesture-begin', this);
     window.removeEventListener('lockscreen-appopened', this);
     window.removeEventListener('mozmemorypressure', this);
-    window.removeEventListener('keyboardlayoutsremoved', this);
   };
 
   InputWindowManager.prototype.handleEvent = function iwm_handleEvent(evt) {
@@ -168,9 +166,7 @@
         }
         break;
       case 'input-appready':
-        if (inputWindow === this._currentWindow) {
-          System.publish('keyboardready');
-        }
+        KeyboardManager._onKeyboardReady();
         // don't bother close the last window if it's been killed
         // (happens when last window was replaced due to OOM-kill)
         if (this._lastWindow && !this._lastWindow.isDead()) {
@@ -199,12 +195,11 @@
         // input app.
         this._removeInputApp(manifestURL);
 
-        // if it's the showing window is the killed window,
+        // if the showing window is the killed window,
         // we need to notify KeyboardManager to relaunch something.
-        if (this._currentWindow.manifestURL === manifestURL) {
-          System.publish('keyboardkilled', {
-            manifestURL: manifestURL
-          });
+        if (this._currentWindow &&
+            this._currentWindow.manifestURL === manifestURL) {
+          KeyboardManager._onKeyboardKilled(manifestURL);
         }
         break;
       case 'activityrequesting':
@@ -222,7 +217,7 @@
         break;
       case 'lockscreen-appopened':
       case 'sheets-gesture-begin':
-        if (this.hasActiveKeyboard()) {
+        if (this._hasActiveInputApp()) {
           // Instead of hideInputWindow(), we should removeFocus() here.
           // (and removing the focus cause Gecko to ask us to hideInputWindow())
           navigator.mozInputMethod.removeFocus();
@@ -233,21 +228,12 @@
         // get rid of them.
         // We only do that when we don't run input apps OOP.
         this._debug('mozmemorypressure event');
-        if (!this.isOutOfProcessEnabled && !this.hasActiveKeyboard()) {
+        if (!this.isOutOfProcessEnabled && !this._hasActiveInputApp()) {
           this.getLoadedManifestURLs().forEach(manifestURL => {
             this._removeInputApp(manifestURL);
           });
           this._debug('mozmemorypressure event; keyboards removed');
         }
-        break;
-      case 'keyboardlayoutsremoved':
-        evt.detail.manifestURLs.forEach(manifestURL => {
-          if (this._currentWindow &&
-              this._currentWindow.manifest === manifestURL) {
-            this.hideInputWindow();
-          }
-          this._removeInputApp(manifestURL);
-        });
         break;
     }
   };
@@ -268,6 +254,17 @@
     this.isOutOfProcessEnabled = value;
   };
 
+  InputWindowManager.prototype._onInputLayoutsRemoved =
+  function iwm_onInputLayoutsRemoved(manifestURLs) {
+    manifestURLs.forEach(manifestURL => {
+      if (this._currentWindow &&
+          this._currentWindow.manifest === manifestURL) {
+        this.hideInputWindow();
+      }
+      this._removeInputApp(manifestURL);
+    });
+  };
+
   InputWindowManager.prototype._removeInputApp =
   function iwm_removeInputApp(manifestURL) {
     if (!this._inputWindows[manifestURL]) {
@@ -286,9 +283,8 @@
     return this._currentWindow ? this._currentWindow.height : 0;
   };
 
-  // XXX: change it to hasActiveInputApp
-  InputWindowManager.prototype.hasActiveKeyboard =
-    function iwm_hasActiveKeyboard() {
+  InputWindowManager.prototype._hasActiveInputApp =
+    function iwm_hasActiveInputApp() {
       return !!this._currentWindow;
   };
 

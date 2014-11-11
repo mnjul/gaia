@@ -1,7 +1,7 @@
 'use strict';
 
 /* global IMESwitcher, ImeMenu, KeyboardHelper, inputWindowManager,
-          InputLayouts, LazyLoader, System */
+          InputLayouts, LazyLoader */
 
 // If we get a inputmethod-contextchange chrome event for an element with
 // one of these types, we'll just ignore it.
@@ -66,8 +66,6 @@ var KeyboardManager = {
     this.imeSwitcher.start();
 
     window.addEventListener('keyboardhide', this);
-    window.addEventListener('keyboardready', this);
-    window.addEventListener('keyboardkilled', this);
 
     // To handle keyboard layout switching
     window.addEventListener('mozChromeEvent', this);
@@ -119,10 +117,7 @@ var KeyboardManager = {
         manifestURL => !enabledApps.has(manifestURL)
       );
 
-    // Remove apps that are no longer enabled to clean up.
-    System.publish('keyboardlayoutsremoved', {
-      manifestURLs: manifestURLsToRemove
-    });
+    inputWindowManager._onInputLayoutsRemoved(manifestURLsToRemove);
 
     manifestURLsToRemove.forEach(manifestURL => {
       if (this._showingLayoutInfo.layout &&
@@ -209,12 +204,6 @@ var KeyboardManager = {
       case 'keyboardhide':
         this._resetShowingLayoutInfo();
         break;
-      case 'keyboardready':
-        this._showIMESwitcher();
-        break;
-      case 'keyboardkilled':
-        this._onKeyboardKilled(evt.detail.manifestURL);
-        break;
     }
   },
 
@@ -222,6 +211,10 @@ var KeyboardManager = {
   _onKeyboardKilled: function km_onKeyboardKilled(manifestURL) {
     var revokeShowedGroup = this._showingLayoutInfo.group;
     this._setKeyboardToShow(revokeShowedGroup);
+  },
+
+  _onKeyboardReady: function km_onKeyboardReady() {
+    this._showIMESwitcher();
   },
 
   _setKeyboardToShow: function km_setKeyboardToShow(group, index, launchOnly) {
