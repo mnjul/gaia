@@ -1,6 +1,6 @@
 /*global KeyboardManager, sinon, KeyboardHelper, MockKeyboardHelper,
   MocksHelper, MockNavigatorSettings, Applications, Promise, MockL10n,
-  MockImeMenu, InputWindowManager, TYPE_GROUP_MAPPING */
+  MockImeMenu, InputWindowManager, inputWindowManager, TYPE_GROUP_MAPPING */
 'use strict';
 
 require('/shared/test/unit/mocks/mock_lazy_loader.js');
@@ -95,10 +95,8 @@ suite('KeyboardManager', function() {
     // trigger out of the blue when sinon fake timer advances
     this.sinon.stub(KeyboardManager, '_tryLaunchOnBoot');
 
-    var stubInputWindowManager = this.sinon.stub(InputWindowManager.prototype);
-    stubInputWindowManager.getLoadedManifestURLs.returns([]);
-    this.sinon.stub(window, 'InputWindowManager')
-      .returns(stubInputWindowManager);
+    window.inputWindowManager = this.sinon.stub(new InputWindowManager());
+    inputWindowManager.getLoadedManifestURLs.returns([]);
 
     KeyboardManager.init();
 
@@ -407,30 +405,30 @@ suite('KeyboardManager', function() {
     test('change to text and to password', function() {
       KeyboardManager._setKeyboardToShow('text');
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'en'
         }),
         'should change to first text layout'
       );
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
 
       KeyboardManager._switchToNext();
       this.sinon.clock.tick(SWITCH_CHANGE_DELAY);
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'fr'
         }),
         'should change to second text layout'
       );
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
 
       KeyboardManager._setKeyboardToShow('password');
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'fr'
         }),
@@ -441,32 +439,32 @@ suite('KeyboardManager', function() {
     test('change to text and to number and to password', function() {
       KeyboardManager._setKeyboardToShow('text');
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'en'
         }), 'should change to first text layout'
       );
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
       KeyboardManager._switchToNext();
       this.sinon.clock.tick(SWITCH_CHANGE_DELAY);
 
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'fr'
         }), 'should change to second text layout'
       );
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
 
       KeyboardManager._setKeyboardToShow('number');
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
 
       KeyboardManager._setKeyboardToShow('password');
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'fr'
         }),
@@ -477,19 +475,19 @@ suite('KeyboardManager', function() {
     test('change to text, blur, and to password', function() {
       KeyboardManager._setKeyboardToShow('text');
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'en'
         }),
         'should change to first text layout'
       );
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
       KeyboardManager._switchToNext();
       this.sinon.clock.tick(SWITCH_CHANGE_DELAY);
 
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'fr'
         }),
@@ -498,11 +496,11 @@ suite('KeyboardManager', function() {
 
       simulateInputChangeEvent('blur');
 
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
 
       KeyboardManager._setKeyboardToShow('password');
       assert.isTrue(
-        KeyboardManager.inputWindowManager.showInputWindow.calledWith({
+        inputWindowManager.showInputWindow.calledWith({
           manifestURL: 'app://keyboard.gaiamobile.org/manifest.webapp',
           id: 'fr'
         }),
@@ -593,7 +591,7 @@ suite('KeyboardManager', function() {
 
       KeyboardManager.removeKeyboard(fakeFrame_B.manifestURL);
       sinon.assert.callCount(hideKeyboard, 0);
-      assert.ok(KeyboardManager.inputWindowManager.removeKeyboard.calledWith(
+      assert.ok(inputWindowManager.removeKeyboard.calledWith(
         'app://keyboard-test.gaiamobile.org/manifest.webapp'
       ));
     });
@@ -667,7 +665,7 @@ suite('KeyboardManager', function() {
     });
 
     test('sheets-gesture-begin event: hide keyboard if needed', function() {
-      KeyboardManager.inputWindowManager.hasActiveKeyboard.returns(true);
+      inputWindowManager.hasActiveKeyboard.returns(true);
       var spy = this.sinon.spy(navigator.mozInputMethod, 'removeFocus');
       trigger('sheets-gesture-begin');
       sinon.assert.calledOnce(spy);
@@ -680,7 +678,7 @@ suite('KeyboardManager', function() {
     });
 
     test('lock event: hide keyboard if needed', function() {
-      KeyboardManager.inputWindowManager.hasActiveKeyboard.returns(true);
+      inputWindowManager.hasActiveKeyboard.returns(true);
       var spy = this.sinon.spy(navigator.mozInputMethod, 'removeFocus');
       trigger('lockscreen-appopened');
       sinon.assert.calledOnce(spy);
@@ -692,21 +690,21 @@ suite('KeyboardManager', function() {
       KeyboardManager._setKeyboardToShow('text', undefined, true);
 
       sinon.assert.called(
-        KeyboardManager.inputWindowManager.preloadInputWindow
+        inputWindowManager.preloadInputWindow
       );
       sinon.assert.notCalled(
-        KeyboardManager.inputWindowManager.showInputWindow
+        inputWindowManager.showInputWindow
       );
 
-      KeyboardManager.inputWindowManager.preloadInputWindow.reset();
-      KeyboardManager.inputWindowManager.showInputWindow.reset();
+      inputWindowManager.preloadInputWindow.reset();
+      inputWindowManager.showInputWindow.reset();
 
       KeyboardManager._setKeyboardToShow('text', undefined, false);
 
       sinon.assert.notCalled(
-        KeyboardManager.inputWindowManager.preloadInputWindow
+        inputWindowManager.preloadInputWindow
       );
-      sinon.assert.called(KeyboardManager.inputWindowManager.showInputWindow);
+      sinon.assert.called(inputWindowManager.showInputWindow);
     });
 
     test('_onKeyboardReady', function() {
@@ -727,14 +725,14 @@ suite('KeyboardManager', function() {
 
     test('hide', function() {
       KeyboardManager.hideKeyboard();
-      sinon.assert.called(KeyboardManager.inputWindowManager.hideInputWindow);
+      sinon.assert.called(inputWindowManager.hideInputWindow);
       sinon.assert.called(KeyboardManager._resetShowingLayoutInfo);
     });
 
     test('hideImmediately', function() {
       KeyboardManager.hideKeyboardImmediately();
       sinon.assert.called(
-        KeyboardManager.inputWindowManager.hideInputWindowImmediately
+        inputWindowManager.hideInputWindowImmediately
       );
       sinon.assert.called(
         KeyboardManager._resetShowingLayoutInfo
@@ -747,7 +745,7 @@ suite('KeyboardManager', function() {
     setup(function() {
       // prevent _setKeyboardToShow callCount miscalculation
       // due to launch on boot
-      KeyboardManager.inputWindowManager._inputWindows = {
+      inputWindowManager._inputWindows = {
         'app://keyboard.gaiamobile.org/manifest.webapp': {}
       };
 
