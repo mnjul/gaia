@@ -1,16 +1,15 @@
-/* global MocksHelper, LayoutManager, MockKeyboardManager,
+/* global MocksHelper, LayoutManager, InputWindowManager,
           MocksoftwareButtonManager, MockLockScreen,
-          MockSystem */
+          MockSystem, inputWindowManager */
 'use strict';
 
 require('/shared/test/unit/mocks/mock_system.js');
 requireApp('system/js/layout_manager.js');
 requireApp('system/test/unit/mock_lock_screen.js');
-requireApp('system/test/unit/mock_keyboard_manager.js');
 requireApp('system/test/unit/mock_software_button_manager.js');
+require('/js/input_window_manager.js');
 
 var mocksForLayoutManager = new MocksHelper([
-  'KeyboardManager',
   'softwareButtonManager',
   'LockScreen',
   'System'
@@ -27,6 +26,7 @@ suite('system/LayoutManager >', function() {
       }
     };
     window.lockScreen = MockLockScreen;
+    window.inputWindowManager = this.sinon.stub(new InputWindowManager());
     layoutManager = new LayoutManager();
     layoutManager.start();
   });
@@ -134,7 +134,7 @@ suite('system/LayoutManager >', function() {
     test('should take into account keyboard and home button',
     function() {
       var _w = document.documentElement.clientWidth;
-      MockKeyboardManager.mHeight = 100;
+      inputWindowManager.getHeight.returns(100);
       MocksoftwareButtonManager.height = 50;
       layoutManager.keyboardEnabled = true;
       assert.equal(layoutManager.height, H - 100 - 50);
@@ -149,7 +149,7 @@ suite('system/LayoutManager >', function() {
         this.sinon.stub(MockSystem.currentApp, 'isFullScreenLayout')
           .returns(true);
         var _w = document.documentElement.clientWidth;
-        MockKeyboardManager.mHeight = 100;
+        inputWindowManager.getHeight.returns(100);
         MocksoftwareButtonManager.height = 50;
         layoutManager.keyboardEnabled = true;
         assert.equal(layoutManager.height, H - 100);
@@ -164,7 +164,7 @@ suite('system/LayoutManager >', function() {
         this.sinon.stub(MockSystem.currentApp, 'isFullScreenLayout')
           .returns(true);
         var _w = document.documentElement.clientWidth;
-        MockKeyboardManager.mHeight = 100;
+        inputWindowManager.getHeight.returns(100);
         MocksoftwareButtonManager.height = 50;
         layoutManager.keyboardEnabled = true;
         assert.equal(layoutManager.height, H - 100);
@@ -179,7 +179,7 @@ suite('system/LayoutManager >', function() {
         MockSystem.locked = true;
         this.sinon.stub(MockSystem.currentApp, 'isFullScreenLayout')
           .returns(true);
-        MockKeyboardManager.mHeight = 100;
+        inputWindowManager.getHeight.returns(100);
         MocksoftwareButtonManager.height = 50;
         layoutManager.keyboardEnabled = true;
         // Even though the software home button is enabled and reports a height
@@ -199,7 +199,7 @@ suite('system/LayoutManager >', function() {
       H = window.innerHeight;
       W = window.innerWidth;
       _w = document.documentElement.clientWidth;
-      MockKeyboardManager.mHeight = 100;
+      inputWindowManager.getHeight.returns(100);
       MocksoftwareButtonManager.height = 50;
       MocksoftwareButtonManager.width = 50;
     });

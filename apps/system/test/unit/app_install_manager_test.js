@@ -1,4 +1,4 @@
-/* global InputWindowManager */
+/* global InputWindowManager, inputWindowManager */
 
 'use strict';
 
