@@ -329,6 +329,10 @@
   function iwm_makeInputWindow(configs){
     var isCertifiedApp = (configs.manifest.type === 'certified');
 
+    if (0 === this._totalMemory){
+      console.warn('InputWindowManager: totalMemory is 0');
+    }
+
     // oop is always enabled for non-certified app,
     // and optionally enabled to certified apps if
     // available memory is more than 512MB.
