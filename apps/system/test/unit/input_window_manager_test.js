@@ -1,7 +1,7 @@
 'use strict';
 
 /* global MocksHelper, InputWindowManager, MockKeyboardManager, MockPromise,
-   InputWindow */
+   InputWindow, MockSettingsListener */
 
 require('/shared/test/unit/mocks/mock_custom_event.js');
 require('/shared/test/unit/mocks/mock_settings_listener.js');
@@ -388,6 +388,47 @@ suite('InputWindowManager', function() {
     manager._currentWindow.height = 300;
 
     assert.equal(manager.getHeight(), 300);
+  });
+
+  suite('Observation on 3rd-party keyboard Settings', function() {
+    setup(function() {
+      MockSettingsListener.mTeardown();
+    });
+
+    teardown(function() {
+      MockSettingsListener.mTeardown();
+    });
+
+    test('start observes/stop unobserves correctly', function() {
+      var stubObserve = this.sinon.stub(MockSettingsListener, 'observe');
+
+      manager.start();
+
+      assert.isTrue(
+        stubObserve.calledWith('keyboard.3rd-party-app.enabled'), true);
+
+      var callback = MockSettingsListener.mCallback;
+
+      var stubUnobserve = this.sinon.stub(MockSettingsListener, 'unobserve');
+
+      manager.stop();
+
+      assert.isTrue(
+        stubUnobserve.calledWith('keyboard.3rd-party-app.enabled'), callback);
+    });
+    test('setting is correctly set by callback', function() {
+      manager.isOutOfProcessEnabled = undefined;
+
+      manager.start();
+
+      var callback = MockSettingsListener.mCallback;
+
+      callback(true);
+
+      manager.stop();
+
+      assert.isTrue(manager.isOutOfProcessEnabled);
+    });
   });
 
   test('hasActiveInputApp', function() {
