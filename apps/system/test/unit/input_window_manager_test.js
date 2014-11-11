@@ -137,14 +137,29 @@ suite('InputWindowManager', function() {
         assert.isFalse(stubKBReady.called);
       });
 
-      test('Immediate-closes lastWindow if it is available', function() {
+      test('Immediate-closes lastWindow if it is available and not dead',
+      function() {
         var lastWindow = new InputWindow();
         manager._lastWindow = lastWindow;
+        lastWindow.isDead.returns(false);
         evt.detail = new InputWindow();
 
         manager.handleEvent(evt);
 
         assert.isTrue(lastWindow.close.calledWith('immediate'));
+        assert.strictEqual(manager._lastWindow, null);
+      });
+
+      test('Do not immediate-closes lastWindow if it is dead',
+      function() {
+        var lastWindow = new InputWindow();
+        manager._lastWindow = lastWindow;
+        lastWindow.isDead.returns(true);
+        evt.detail = new InputWindow();
+
+        manager.handleEvent(evt);
+
+        assert.isFalse(lastWindow.close.called);
         assert.strictEqual(manager._lastWindow, null);
       });
     });
@@ -215,23 +230,49 @@ suite('InputWindowManager', function() {
       });
     });
 
-    test('input-appterminated', function() {
-      var inputWindow = new InputWindow();
+    suite('input-appterminated', function() {
+      var stubRemoveInputApp;
+      var stubOnKeyboardKilled;
+      var victimInputWindow;
+      var evt;
 
-      var evt = {
-        type: 'input-appterminated',
-        detail: inputWindow
-      };
+      setup(function(){
+        stubRemoveInputApp = this.sinon.stub(manager, '_removeInputApp');
 
-      inputWindow.manifestURL =
-        'app://victim-kb.gaiamobile.org/manifest.webapp';
+        stubOnKeyboardKilled =
+          this.sinon.stub(MockKeyboardManager, '_onKeyboardKilled');
 
-      var stubRemoveInputApp =
-        this.sinon.stub(MockKeyboardManager, 'removeKeyboard');
+        victimInputWindow = new InputWindow();
 
-      manager.handleEvent(evt);
+        victimInputWindow.manifestURL =
+          'app://victim-kb.gaiamobile.org/manifest.webapp';
 
-      assert.isTrue(stubRemoveInputApp.calledWith(inputWindow.manifestURL));
+        evt = {
+          type: 'input-appterminated',
+          detail: victimInputWindow
+        };
+      });
+
+      test('Not the currentWindow', function() {
+        manager._currentWindow = new InputWindow();
+
+        manager.handleEvent(evt);
+
+        assert.isTrue(
+          stubRemoveInputApp.calledWith(victimInputWindow.manifestURL));
+        assert.isFalse(
+          stubOnKeyboardKilled.calledWith(victimInputWindow.manifestURL));
+      });
+      test('Killed the currentWindow', function() {
+        manager._currentWindow = victimInputWindow;
+
+        manager.handleEvent(evt);
+
+        assert.isTrue(
+          stubRemoveInputApp.calledWith(victimInputWindow.manifestURL));
+        assert.isTrue(
+          stubOnKeyboardKilled.calledWith(victimInputWindow.manifestURL));
+      });
     });
 
     suite('External events for hideInputWindowImmediately', function() {
@@ -583,22 +624,6 @@ suite('InputWindowManager', function() {
       // the key point of loading an input app is we determine whether to make
       // it out-of-process correctly, so it's being thoroughly tested.
       suite('oop flag', function() {
-        var oldKBManagerOOPEnabled;
-        var oldKBManagerTotalMemory;
-
-        setup(function() {
-          oldKBManagerOOPEnabled =
-            MockKeyboardManager.isOutOfProcessEnabled;
-          oldKBManagerTotalMemory = MockKeyboardManager.totalMemory;
-        });
-
-        teardown(function() {
-          MockKeyboardManager.isOutOfProcessEnabled = 
-            oldKBManagerOOPEnabled;
-
-          MockKeyboardManager.totalMemory = oldKBManagerTotalMemory;
-        });
-
         var oopTest = function(certified, oopEnabled, memory, expectedOOP) {
           var configs = {
             manifest: {
@@ -616,8 +641,8 @@ suite('InputWindowManager', function() {
             configs.manifest.type = 'privileged';
           }
 
-          MockKeyboardManager.isOutOfProcessEnabled = oopEnabled;
-          MockKeyboardManager.totalMemory = memory;
+          manager.isOutOfProcessEnabled = oopEnabled;
+          manager._totalMemory = memory;
 
           manager._makeInputWindow(configs);
 

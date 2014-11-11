@@ -5,5 +5,6 @@ MockKeyboardManager = {
     this.mHeight = 0;
   },
   _onKeyboardReady: function() {},
+  _onKeyboardKilled: function() {},
   inputTypeTable: {}
 };

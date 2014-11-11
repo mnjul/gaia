@@ -171,8 +171,10 @@
         }
         // don't bother close the last window if it's been killed
         // (happens when last window was replaced due to OOM-kill)
-        if (this._lastWindow && !this._lastWindow.isDead()) {
-          this._lastWindow.close('immediate');
+        if (this._lastWindow) {
+          if (!this._lastWindow.isDead()) {
+            this._lastWindow.close('immediate');
+          }
           this._lastWindow = null;
         }
         break;
