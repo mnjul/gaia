@@ -1,10 +1,11 @@
 'use strict';
 
-/* global MocksHelper, InputWindowManager, MockKeyboardManager,
+/* global MocksHelper, InputWindowManager, MockKeyboardManager, MockPromise,
    InputWindow */
 
 require('/shared/test/unit/mocks/mock_custom_event.js');
 require('/shared/test/unit/mocks/mock_settings_listener.js');
+require('/shared/test/unit/mocks/mock_promise.js');
 require('/test/unit/mock_orientation_manager.js');
 require('/test/unit/mock_keyboard_manager.js');
 require('/js/input_window_manager.js');
@@ -18,6 +19,7 @@ suite('InputWindowManager', function() {
 
   var manager;
   var stubIWConstructor;
+  var realGetFeature;
 
   suiteSetup(function(done) {
     require('/js/browser_frame.js');
@@ -37,7 +39,22 @@ suite('InputWindowManager', function() {
       this.sinon.stub(Object.create(realIWPrototype))
     );
 
-    manager = new InputWindowManager(MockKeyboardManager);
+    realGetFeature = navigator.getFeature;
+    var getFeaturePromise = new MockPromise();
+    navigator.getFeature = this.sinon.stub().returns(getFeaturePromise);
+
+    manager = new InputWindowManager();
+
+    getFeaturePromise.mFulfillToValue(768);
+  });
+
+  teardown(function() {
+    navigator.getFeature = realGetFeature;
+  });
+
+  test('Hardware memory is correctly retrieved', function() {
+    assert.equal(manager._totalMemory, 768);
+    assert.isTrue(navigator.getFeature.calledWith('hardware.memory'));
   });
 
   suite('Event handling', function() {
