@@ -562,6 +562,17 @@ suite('KeyboardManager', function() {
     assert.ok(_setKeyboardToShow.calledWith('text'));
   });
 
+  suite('Event handler', function() {
+    test('keyboardhide should call resetShowingLayoutInfo', function() {
+      var stubResetShowingLayoutInfo =
+        this.sinon.stub(KeyboardManager, '_resetShowingLayoutInfo');
+
+      KeyboardManager.handleEvent(new CustomEvent('keyboardhide'));
+
+      assert.isTrue(stubResetShowingLayoutInfo.called);
+    });
+  });
+
   suite('Show Keyboard', function() {
     test('setKeyboardToShow: preload vs. show', function() {
       KeyboardManager._setKeyboardToShow('text', undefined, true);
@@ -918,5 +929,70 @@ suite('KeyboardManager', function() {
       sinon.assert.calledWith(KeyboardManager._setKeyboardToShow,
         'text', 0);
     });
+  });
+
+  test('updateLayouts calls functions as needed', function() {
+    var oldShowingLayoutInfo = KeyboardManager._showingLayoutInfo;
+
+    KeyboardManager._showingLayoutInfo = {
+      layout: {
+        manifestURL: 'app://keyboard3.gaiamobila.org/manifest.webapp'
+      }
+    };
+
+    var stubProcessLayouts =
+      this.sinon.stub(KeyboardManager.inputLayouts, 'processLayouts');
+
+    stubProcessLayouts.returns(
+      new Set(['app://keyboard1.gaiamobila.org/manifest.webapp',
+               'app://keyboard2.gaiamobila.org/manifest.webapp']));
+
+    inputWindowManager.getLoadedManifestURLs.returns([
+      'app://keyboard1.gaiamobila.org/manifest.webapp',
+      'app://keyboard2.gaiamobila.org/manifest.webapp',
+      'app://keyboard3.gaiamobila.org/manifest.webapp',
+      'app://keyboard4.gaiamobila.org/manifest.webapp'
+    ]);
+
+    var stubResetShowingLayoutInfo =
+      this.sinon.stub(KeyboardManager, '_resetShowingLayoutInfo');
+
+    KeyboardManager._tryLaunchOnBoot.reset();
+
+    var layouts = [
+      {
+        app: {
+          manifestURL: 'app://keyboard1.gaiamobila.org/manifest.webapp'
+        },
+      },
+      {
+        app: {
+          manifestURL: 'app://keyboard2.gaiamobila.org/manifest.webapp'
+        }
+      }
+    ];
+
+    KeyboardManager._updateLayouts(layouts);
+
+    assert.isTrue(stubProcessLayouts.calledWith(layouts));
+
+    // updateLayouts is always called at KeyboardManager.init()
+    // so we need to check against the last call of updateLayouts
+
+    var lastCallIndex = inputWindowManager._onInputLayoutsRemoved.callCount - 1;
+
+    assert.deepEqual(
+      inputWindowManager._onInputLayoutsRemoved.getCall(lastCallIndex).args[0],
+      ['app://keyboard3.gaiamobila.org/manifest.webapp',
+       'app://keyboard4.gaiamobila.org/manifest.webapp'],
+      'kb3 and kb4 should be removed'
+    );
+
+    assert.isTrue(stubResetShowingLayoutInfo.calledOnce,
+      '_resetShowingLayoutInfo should be called once for kb3');
+
+    assert.isTrue(KeyboardManager._tryLaunchOnBoot.called);
+
+    KeyboardManager._showingLayoutInfo = oldShowingLayoutInfo;
   });
 });
