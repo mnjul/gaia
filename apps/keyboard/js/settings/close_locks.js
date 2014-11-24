@@ -31,6 +31,8 @@ var CloseLockManager = function CloseLockManager() {
   this.waitForUnlock = false;
 };
 
+CloseLockManager.prototype.onclose = undefined;
+
 CloseLockManager.prototype.start = function() {
   this._closeLocks = new Set();
   this._awakeLocks = new Set();
@@ -41,6 +43,7 @@ CloseLockManager.prototype.stop = function() {
   this._closeLocks = null;
   this._awakeLocks = null;
   this.waitForUnlock = false;
+  this.onclose = undefined;
 };
 
 CloseLockManager.prototype.requestLock = function(topic) {
@@ -96,6 +99,9 @@ CloseLockManager.prototype._maybeCloseNow = function() {
   // If there is no stayAwake lock present and there is a requestClose lock,
   // we should close now.
   if (this._awakeLocks.size === 0 && this._closeLocks.size !== 0) {
+    if (typeof this.onclose === 'function') {
+      this.onclose();
+    }
     window.close();
   }
 };

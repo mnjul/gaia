@@ -15,6 +15,8 @@ KeyboardAppBuilder.prototype.setOptions = function(options) {
   this.enabledLayouts = options.GAIA_KEYBOARD_LAYOUTS.split(',');
   this.preloadDictLayouts =
     options.GAIA_KEYBOARD_PRELOAD_DICT_LAYOUTS.split(',');
+  this.userDictEnabled =
+    (parseInt(options.GAIA_KEYBOARD_ENABLE_USER_DICT) === 1);
   this.distDir = utils.getFile(options.STAGE_APP_DIR);
   this.appDir = utils.getFile(options.APP_DIR);
 };
@@ -35,6 +37,7 @@ KeyboardAppBuilder.prototype.copyStaticFiles = function() {
                                'style',
                                'js/render.js',
                                'js/settings',
+                               'js/shared',
                                'js/keyboard',
                                'js/views');
 
@@ -163,9 +166,13 @@ KeyboardAppBuilder.prototype.generateManifest = function() {
 };
 
 KeyboardAppBuilder.prototype.modifySettings = function() {
-  if (settingsConfig.checkHandwriting(this.enabledLayouts)) {
-    settingsConfig.addHandwritingSettings(this.appDir.path, this.distDir.path);
-  }
+  var enabledFeatures = {
+    handwriting: settingsConfig.checkHandwriting(this.enabledLayouts),
+    userDict: this.userDictEnabled
+  };
+
+  settingsConfig.addSettings(
+    this.appDir.path, this.distDir.path, enabledFeatures);
 };
 
 KeyboardAppBuilder.prototype.execute = function(options) {
