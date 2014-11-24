@@ -53,7 +53,7 @@ function addHandwritingSettings(appDirPath, distDirPath) {
   // Is it a bug?
   settings = utils.getFile(appDirPath, 'handwriting-settings.html');
   content = utils.getFileContent(settings);
-  var container = domDoc.getElementById('container');
+  var container = domDoc.getElementById('root-container');
   container.innerHTML += content;
   var sDoc = serializer.serializeToString(domDoc);
   utils.writeContent(utils.getFile(distDirPath, 'settings.html'), sDoc);

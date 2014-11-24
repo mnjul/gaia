@@ -1,5 +1,7 @@
 'use strict';
 
+/* global app */
+
 /**
  * CloseLockManager manages requests from multiple modules on whether we
  * should close ourselves *now* or wait for the "stayAwake" lock to unlock.
@@ -96,6 +98,7 @@ CloseLockManager.prototype._maybeCloseNow = function() {
   // If there is no stayAwake lock present and there is a requestClose lock,
   // we should close now.
   if (this._awakeLocks.size === 0 && this._closeLocks.size !== 0) {
+    app.stop();
     window.close();
   }
 };

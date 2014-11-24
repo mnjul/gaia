@@ -66,6 +66,7 @@ KeyboardAppBuilder.prototype.copyStaticFiles = function() {
                                  'style',
                                  'js/render.js',
                                  'js/settings',
+                                 'js/shared',                                 
                                  'js/keyboard',
                                  'js/views',
                                  'js/imes/latin/latin.js',
