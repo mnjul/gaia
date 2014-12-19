@@ -203,6 +203,7 @@
         }
 
         inputWindow._setAsActiveInput(false);
+
         if (!this._currentWindow) {
           this._kbPublish('keyboardhidden', undefined);
         }
@@ -462,6 +463,8 @@
         height: height
       }
     };
+
+    console.log("InputWindowManager, kbPublish: ", type);
 
     // We dispatch the events at the body level so we are able to intercept
     // them and prevent page resizing where desired.

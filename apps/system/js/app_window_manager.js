@@ -446,9 +446,13 @@
     },
 
     '_handle_system-resize': function() {
+      console.log("AWM system-resize 1");
       if (this._activeApp) {
+        console.log("AWM system-resize 2");
         this.debug(' Resizing ' + this._activeApp.name);
         if (!this._activeApp.isTransitioning()) {
+          console.log("AWM system-resize 3");
+          console.log("AWM system-resize this._activeApp", this._activeApp);
           this._activeApp.resize();
           return false;
         }

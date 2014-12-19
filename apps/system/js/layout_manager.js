@@ -62,6 +62,9 @@
         height = Math.ceil(height * dpx) / dpx;
       }
 
+      console.log("LayoutManager height getter, got height: ", height);
+      console.trace();
+
       return height;
     },
 
@@ -141,6 +144,7 @@
     },
 
     handleEvent: function lm_handleEvent(evt) {
+      console.log('LayoutManager, got: ', evt.type);
       this.debug('resize event got: ', evt.type);
       switch (evt.type) {
         case 'keyboardchange':
@@ -176,6 +180,7 @@
           if (evt.type === 'keyboardhide') {
             this.keyboardEnabled = false;
           }
+          console.log("LayoutManager, publishing system-resize");
           this.publish('system-resize');
           break;
       }

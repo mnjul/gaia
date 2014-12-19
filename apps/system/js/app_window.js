@@ -293,19 +293,40 @@
    * @return {Boolean} The instance is active or not.
    */
   AppWindow.prototype.isActive = function aw_isActive() {
+    if (this.url.indexOf('sms') >= 0) {
+      console.trace();
+      console.log("AW isActive: 1");
+    }
+
     if (!this.element) {
       return false;
+    }
+
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("AW isActive: 2");
     }
 
     if (this.element.classList.contains('will-become-active')) {
       return true;
     }
 
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("AW isActive: 3");
+    }
+
     if (this.element.classList.contains('will-become-inactive')) {
       return false;
     }
 
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("AW isActive: 4");
+    }
+
     if (this.transitionController) {
+      if (this.url.indexOf('sms') >= 0) {
+        console.log("AW isActive: 5; transitionState: ", this.transitionController._transitionState);
+      }
+
       return (this.transitionController._transitionState == 'opened' ||
               this.transitionController._transitionState == 'opening');
     } else {
@@ -1470,18 +1491,42 @@
   * ![AppWindow resize flow chart](http://i.imgur.com/bUMm4VM.png)
   */
   AppWindow.prototype.resize = function aw_resize() {
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("AW resize 1");
+      console.trace();
+    }
     if (this.isDead()) {
       return;
     }
-    this.debug('request RESIZE...active? ', this.isActive());
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("AW resize 2");
+      console.log('request RESIZE...active? ', this.isActive());
+    }
     var bottom = this.getBottomMostWindow();
-    if (!bottom.isActive() || this.isTransitioning()) {
+
+    var bottomAct;
+    var isTrans;
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("bottom.isActive(): ", bottomAct = bottom.isActive());
+      console.log("this.isTransitioning(): ", isTrans = this.isTransitioning());
+    }
+
+    if (!bottomAct || isTrans) {
       return;
     }
+    if (this.url.indexOf('sms') >= 0) {
+      console.log("AW resize 3");
+    }
     if (this.frontWindow) {
+      if (this.url.indexOf('sms') >= 0) {
+        console.log("AW resize 4");
+      }
       this._resize();
       this.frontWindow.resize();
     } else {
+      if (this.url.indexOf('sms') >= 0) {
+        console.log("AW resize 5");
+      }
       // resize myself if no child.
       this.debug(' will resize... ');
       this._resize();
