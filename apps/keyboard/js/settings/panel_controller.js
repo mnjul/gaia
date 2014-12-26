@@ -61,7 +61,8 @@ PanelController.prototype._createTransitionPromise = function(target) {
 PanelController.prototype.navigateToRoot = function() {
   // we assume we're always navigating from one-level-deep panel (=> word list)
 
-  Promise.resolve().then(this._currentPanel.beforeHide()).then(() => {
+  Promise.resolve(this._currentPanel.beforeHide())
+  .then(() => {
     var transitionPromise =
       this._createTransitionPromise(this._currentPanel._container);
 
@@ -70,19 +71,24 @@ PanelController.prototype.navigateToRoot = function() {
     this._rootPanelElem.classList.add('current');
 
     return transitionPromise;
-  }).then(() => {
-    return this._currentPanel.hide();
-  }).then(() => {
+  })
+  .then(this._currentPanel.hide.bind(this._currentPanel))
+  .then(() => {
     this._currentPanel = null;
-  }).catch(e => e && console.error(e));
+  })
+  .catch(e => e && console.error(e));
 };
 
 PanelController.prototype.navigateToPanel = function(panel, options) {
   // we assume we're always navigating from root
+  // XXX: We don't have a root panel yet, so root panel won't stop listening
+  // to event when we're navigating to another panel. So we might be triggering
+  // this twice. We need to fix this in a follow-up bug when we do root panel.
 
   this._currentPanel = panel;
 
-  Promise.resolve().then(panel.beforeShow(options)).then(() => {
+  Promise.resolve(panel.beforeShow(options))
+  .then(() => {
     var transitionPromise = this._createTransitionPromise(panel._container);
 
     panel._container.classList.add('current');
@@ -90,9 +96,9 @@ PanelController.prototype.navigateToPanel = function(panel, options) {
     this._rootPanelElem.classList.add('prev');
 
     return transitionPromise;
-  }).then(() => {
-    return panel.show();
-  }).catch(e => e && console.error(e));
+  })
+  .then(panel.show.bind(panel))
+  .catch(e => e && console.error(e));
 };
 
 PanelController.prototype.openDialog = function(panel, options) {
@@ -106,27 +112,31 @@ PanelController.prototype.openDialog = function(panel, options) {
   panel.onsubmit = results => {
     resultPromiseResolve(results);
 
-    Promise.resolve().then(panel.beforeHide()).then(() => {
+    Promise.resolve(panel.beforeHide())
+    .then(() => {
       var transitionPromise = this._createTransitionPromise(panel._container);
 
       panel._container.classList.remove('displayed');
 
       return transitionPromise;
-    }).then(() => {
+    })
+    .then(() => {
       panel.onsubmit = undefined;
       return panel.hide();
-    }).catch(e => resultPromiseReject(e));
+    })
+    .catch(e => resultPromiseReject(e));
   };
 
-  Promise.resolve().then(panel.beforeShow(options)).then(() => {
+  Promise.resolve(panel.beforeShow(options))
+  .then(() => {
     var transitionPromise = this._createTransitionPromise(panel._container);
 
     panel._container.classList.add('displayed');
 
     return transitionPromise;
-  }).then(() => {
-    return panel.show();
-  }).catch(e => resultPromiseReject(e));
+  })
+  .then(panel.show.bind(panel))
+  .catch(e => resultPromiseReject(e));
 
   return resultPromise;
 };
