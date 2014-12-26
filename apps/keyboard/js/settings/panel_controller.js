@@ -40,6 +40,11 @@ var PanelController = function(rootPanelElem) {
   this._currentPanel = null;
 };
 
+// in case transitionend event is interrupted due to whatever reason,
+// we use a timeout to make sure that the sequence is not uncontrollably
+// interruptted.
+PanelController.prototype.TRANSITION_TIMEOUT = 600;
+
 PanelController.prototype.start = function() {
 };
 
@@ -49,13 +54,17 @@ PanelController.prototype.stop = function() {
 };
 
 PanelController.prototype._createTransitionPromise = function(target) {
-  return new Promise(function(resolve, reject){
-    target.addEventListener('transitionend', function transitionEnd(){
+  return new Promise(function(resolve){
+    var transitionEnd = function(){
+      clearTimeout(timeout);
       target.removeEventListener('transitionend', transitionEnd);
 
       resolve();
-    });
-  });
+    };
+
+    var timeout = setTimeout(transitionEnd, this.TRANSITION_TIMEOUT);
+    target.addEventListener('transitionend', transitionEnd);
+  }.bind(this));
 };
 
 PanelController.prototype.navigateToRoot = function() {
