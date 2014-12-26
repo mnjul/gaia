@@ -21,8 +21,7 @@ var KeyboardSettingsApp = function KeyboardSettingsApp() {
 };
 
 KeyboardSettingsApp.prototype.start = function() {
-  this.closeLockManager = new CloseLockManager();
-  this.closeLockManager.onclose = this.stop.bind(this);
+  this.closeLockManager = new CloseLockManager(this);
   this.closeLockManager.start();
 
   // SettingsPromiseManager wraps Settings DB methods into promises.

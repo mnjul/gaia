@@ -25,13 +25,12 @@ CloseLock.prototype.unlock = function() {
   this._manager.releaseLock(this, this._topic);
 };
 
-var CloseLockManager = function CloseLockManager() {
+var CloseLockManager = function CloseLockManager(app) {
   this._closeLocks = null;
   this._awakeLocks = null;
+  this.app = app;
   this.waitForUnlock = false;
 };
-
-CloseLockManager.prototype.onclose = undefined;
 
 CloseLockManager.prototype.start = function() {
   this._closeLocks = new Set();
@@ -43,7 +42,6 @@ CloseLockManager.prototype.stop = function() {
   this._closeLocks = null;
   this._awakeLocks = null;
   this.waitForUnlock = false;
-  this.onclose = undefined;
 };
 
 CloseLockManager.prototype.requestLock = function(topic) {
@@ -99,9 +97,7 @@ CloseLockManager.prototype._maybeCloseNow = function() {
   // If there is no stayAwake lock present and there is a requestClose lock,
   // we should close now.
   if (this._awakeLocks.size === 0 && this._closeLocks.size !== 0) {
-    if (typeof this.onclose === 'function') {
-      this.onclose();
-    }
+    this.app.onclose();
     window.close();
   }
 };
