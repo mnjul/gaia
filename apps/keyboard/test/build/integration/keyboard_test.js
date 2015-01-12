@@ -400,10 +400,6 @@ suite('Keyboard settings building tests', function() {
           return elem.src !== 'js/settings/user_dictionary.js';
         }), 'No script should include user_dictionary.js');
 
-        assert.isTrue(getScriptsFromDomDoc(settingsDOMDoc).every(function(elem){
-          return elem.src !== 'js/settings/panel_controller.js';
-        }), 'No script should include panel_controller.js');
-
         assert.isTrue(getLIsFromRootPanel(settingsDOMDoc).every(function(elem){
           return elem.querySelector('a#menu-userdict') === null;
         }), 'No <li> in root panel should include user dict settings');
@@ -430,10 +426,6 @@ suite('Keyboard settings building tests', function() {
         assert.isTrue(getScriptsFromDomDoc(settingsDOMDoc).some(function(elem){
           return elem.src === 'js/settings/user_dictionary.js';
         }), 'Some script should include user_dictionary.js');
-
-        assert.isTrue(getScriptsFromDomDoc(settingsDOMDoc).some(function(elem){
-          return elem.src === 'js/settings/panel_controller.js';
-        }), 'Some script should include panel_controller.js');
 
         assert.isTrue(getLIsFromRootPanel(settingsDOMDoc).some(function(elem){
           return elem.querySelector('a#menu-userdict') !== null;

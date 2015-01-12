@@ -64,7 +64,6 @@ function addSettings(appDirPath, distDirPath, enabledFeatures) {
     insertScript('js/settings/user_dictionary_edit_dialog.js');
     insertScript('js/settings/user_dictionary_list_panel.js');
     insertScript('js/settings/user_dictionary.js');
-    insertScript('js/settings/panel_controller.js');
 
     var udSettings = utils.getFile(appDirPath, 'user-dictionary-settings.html');
     var udContent = utils.getFileContent(udSettings);

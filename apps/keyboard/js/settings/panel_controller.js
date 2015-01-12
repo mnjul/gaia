@@ -25,10 +25,6 @@
  *
  * Additionally, each panel/dialog should initialize itself on first
  *  beforeShow() in its object lifetime.
- * 
- * The big exception is the root panel -- it's still taken care of by the old
- * codes; and it doesn't need to do any housekeeping job when we transition
- * back from word list.
  *
  * == Dialogs ==
  *
@@ -53,17 +49,20 @@
 // interruptted.
 const TRANSITION_TIMEOUT = 600;
 
-var PanelController = function(rootPanelElem) {
-  this._rootPanelElem = rootPanelElem;
+var PanelController = function(rootPanel) {
+  this._rootPanel = rootPanel;
   this._currentPanel = null;
 };
 
 PanelController.prototype.start = function() {
+  Promise.resolve(this._rootPanel.beforeShow())
+  .then(this._rootPanel.show.bind(this._rootPanel))
+  .catch(e => e && console.error(e));
 };
 
 PanelController.prototype.stop = function() {
+  this._rootPanel = null;
   this._currentPanel = null;
-  this._rootPanelElem = undefined;
 };
 
 PanelController.prototype._createTransitionPromise = function(target) {
@@ -84,17 +83,19 @@ PanelController.prototype.navigateToRoot = function() {
   // we assume we're always navigating from one-level-deep panel (=> word list)
 
   Promise.resolve(this._currentPanel.beforeHide())
+  .then(() => this._rootPanel.beforeShow())
   .then(() => {
     var transitionPromise =
       this._createTransitionPromise(this._currentPanel._container);
 
     this._currentPanel._container.classList.remove('current');
-    this._rootPanelElem.classList.remove('prev');
-    this._rootPanelElem.classList.add('current');
+    this._rootPanel._container.classList.remove('prev');
+    this._rootPanel._container.classList.add('current');
 
     return transitionPromise;
   })
   .then(this._currentPanel.hide.bind(this._currentPanel))
+  .then(this._rootPanel.show.bind(this._rootPanel))
   .then(() => {
     this._currentPanel = null;
   })
@@ -103,22 +104,21 @@ PanelController.prototype.navigateToRoot = function() {
 
 PanelController.prototype.navigateToPanel = function(panel, options) {
   // we assume we're always navigating from root
-  // XXX: We don't have a root panel yet, so root panel won't stop listening
-  // to event when we're navigating to another panel. So we might be triggering
-  // this twice. We need to fix this in a follow-up bug when we do root panel.
 
   this._currentPanel = panel;
 
-  Promise.resolve(panel.beforeShow(options))
+  Promise.resolve(this._rootPanel.beforeHide())
+  .then(() => panel.beforeShow(options))
   .then(() => {
     var transitionPromise = this._createTransitionPromise(panel._container);
 
     panel._container.classList.add('current');
-    this._rootPanelElem.classList.remove('current');
-    this._rootPanelElem.classList.add('prev');
+    this._rootPanel._container.classList.remove('current');
+    this._rootPanel._container.classList.add('prev');
 
     return transitionPromise;
   })
+  .then(this._rootPanel.hide.bind(this._rootPanel))
   .then(panel.show.bind(panel))
   .catch(e => e && console.error(e));
 };
