@@ -6,13 +6,14 @@
  * Controls transitioning of different panels and dialogs. The concept is
  * largely the same with Settings app, but we're working under these bases here:
  *
- * 1) we only have two panels (root and user-dictionary-word-list), and one
+ * 1) we only have two panels (general and user-dictionary-word-list), and one
  *    dialog (user-dictionary-edit).
- * 2) we either navigate to root from word list, or
- *    navigate from root to word list, or
+ * 2) we either navigate to general from word list, or
+ *    navigate from general to word list, or
  *    show the dict edit dialog when we're at word list.
  *
- * The transition between root and word list panels are written ad-hoc thereby.
+ * The transition between general and word list panels are written
+ * ad-hoc thereby.
  *
  * The architecture is like Settings app and we have a few exposed event hooks
  * required for each panel/dialog class, like:
@@ -49,19 +50,19 @@
 // interruptted.
 const TRANSITION_TIMEOUT = 600;
 
-var PanelController = function(rootPanel) {
-  this._rootPanel = rootPanel;
+var PanelController = function(generalPanel) {
+  this._generalPanel = generalPanel;
   this._currentPanel = null;
 };
 
 PanelController.prototype.start = function() {
-  Promise.resolve(this._rootPanel.beforeShow())
-  .then(this._rootPanel.show.bind(this._rootPanel))
+  Promise.resolve(this._generalPanel.beforeShow())
+  .then(this._generalPanel.show.bind(this._generalPanel))
   .catch(e => e && console.error(e));
 };
 
 PanelController.prototype.stop = function() {
-  this._rootPanel = null;
+  this._generalPanel = null;
   this._currentPanel = null;
 };
 
@@ -79,23 +80,23 @@ PanelController.prototype._createTransitionPromise = function(target) {
   });
 };
 
-PanelController.prototype.navigateToRoot = function() {
+PanelController.prototype.navigateToGeneral = function() {
   // we assume we're always navigating from one-level-deep panel (=> word list)
 
   Promise.resolve(this._currentPanel.beforeHide())
-  .then(() => this._rootPanel.beforeShow())
+  .then(() => this._generalPanel.beforeShow())
   .then(() => {
     var transitionPromise =
-      this._createTransitionPromise(this._currentPanel._container);
+      this._createTransitionPromise(this._currentPanel.container);
 
-    this._currentPanel._container.classList.remove('current');
-    this._rootPanel._container.classList.remove('prev');
-    this._rootPanel._container.classList.add('current');
+    this._currentPanel.container.classList.remove('current');
+    this._generalPanel.container.classList.remove('prev');
+    this._generalPanel.container.classList.add('current');
 
     return transitionPromise;
   })
   .then(this._currentPanel.hide.bind(this._currentPanel))
-  .then(this._rootPanel.show.bind(this._rootPanel))
+  .then(this._generalPanel.show.bind(this._generalPanel))
   .then(() => {
     this._currentPanel = null;
   })
@@ -103,22 +104,22 @@ PanelController.prototype.navigateToRoot = function() {
 };
 
 PanelController.prototype.navigateToPanel = function(panel, options) {
-  // we assume we're always navigating from root
+  // we assume we're always navigating from general
 
   this._currentPanel = panel;
 
-  Promise.resolve(this._rootPanel.beforeHide())
+  Promise.resolve(this._generalPanel.beforeHide())
   .then(() => panel.beforeShow(options))
   .then(() => {
-    var transitionPromise = this._createTransitionPromise(panel._container);
+    var transitionPromise = this._createTransitionPromise(panel.container);
 
-    panel._container.classList.add('current');
-    this._rootPanel._container.classList.remove('current');
-    this._rootPanel._container.classList.add('prev');
+    panel.container.classList.add('current');
+    this._generalPanel.container.classList.remove('current');
+    this._generalPanel.container.classList.add('prev');
 
     return transitionPromise;
   })
-  .then(this._rootPanel.hide.bind(this._rootPanel))
+  .then(this._generalPanel.hide.bind(this._generalPanel))
   .then(panel.show.bind(panel))
   .catch(e => e && console.error(e));
 };
@@ -152,9 +153,9 @@ DialogController.prototype.openDialog = function(dialog, options) {
 
     Promise.resolve(dialog.beforeHide())
     .then(() => {
-      var transitionPromise = this._createTransitionPromise(dialog._container);
+      var transitionPromise = this._createTransitionPromise(dialog.container);
 
-      dialog._container.classList.remove('displayed');
+      dialog.container.classList.remove('displayed');
 
       return transitionPromise;
     })
@@ -170,9 +171,9 @@ DialogController.prototype.openDialog = function(dialog, options) {
 
   Promise.resolve(dialog.beforeShow(options))
   .then(() => {
-    var transitionPromise = this._createTransitionPromise(dialog._container);
+    var transitionPromise = this._createTransitionPromise(dialog.container);
 
-    dialog._container.classList.add('displayed');
+    dialog.container.classList.add('displayed');
 
     return transitionPromise;
   })

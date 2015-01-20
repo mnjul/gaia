@@ -1,7 +1,7 @@
 'use strict';
 
 /* global SettingsPromiseManager, CloseLockManager, UserDictionaryListPanel,
-          RootPanel, DialogController, MozActivity, PanelController,
+          GeneralPanel, DialogController, MozActivity, PanelController,
           UserDictionaryEditDialog */
 
 (function(exports) {
@@ -14,7 +14,7 @@ var KeyboardSettingsApp = function KeyboardSettingsApp() {
   // let's keep the reference of panels here for now.
   this.panelController = null;
   this.dialogController = null;
-  this.rootPanel = null;
+  this.generalPanel = null;
   this.userDictionaryListPanel = null;
   this.userDictionaryEditDialog = null;
 
@@ -30,9 +30,9 @@ KeyboardSettingsApp.prototype.start = function() {
   // This must be available to *GroupView.
   this.settingsPromiseManager = new SettingsPromiseManager();
 
-  this.rootPanel = new RootPanel(this);
+  this.generalPanel = new GeneralPanel(this);
 
-  this.panelController = new PanelController(this.rootPanel);
+  this.panelController = new PanelController(this.generalPanel);
   this.panelController.start();
 
   this.dialogController = new DialogController();
@@ -56,8 +56,8 @@ KeyboardSettingsApp.prototype.stop = function() {
   this.panelController.stop();
   this.panelController = null;
 
-  this.rootPanel.uninit();
-  this.rootPanel = null;
+  this.generalPanel.uninit();
+  this.generalPanel = null;
 
   this.dialogController.stop();
   this.dialogController = null;

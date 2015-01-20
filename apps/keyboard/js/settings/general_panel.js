@@ -4,10 +4,10 @@
 
 (function(exports) {
 
-var RootPanel = function(app) {
+var GeneralPanel = function(app) {
   this._initialized= false;
 
-  this._container = null;
+  this.container = null;
   this._menuUDItem = null;
 
   this.app = app;
@@ -16,12 +16,12 @@ var RootPanel = function(app) {
   this._handwritingSettingsGroupView = null;
 };
 
-RootPanel.prototype.CONTAINER_ID = 'root';
+GeneralPanel.prototype.CONTAINER_ID = 'general';
 
-RootPanel.prototype.init = function() {
+GeneralPanel.prototype.init = function() {
   this._initialized = true;
 
-  this._container = document.getElementById(this.CONTAINER_ID);
+  this.container = document.getElementById(this.CONTAINER_ID);
 
   this._menuUDItem = document.getElementById('menu-userdict');
 
@@ -36,9 +36,9 @@ RootPanel.prototype.init = function() {
   }
 };
 
-RootPanel.prototype.uninit = function() {
+GeneralPanel.prototype.uninit = function() {
   this._initialized = false;
-  this._container = null;
+  this.container = null;
   this._menuUDItem = null;
 
   this.generalSettingsGroupView.uninit();
@@ -50,20 +50,20 @@ RootPanel.prototype.uninit = function() {
   }
 };
 
-RootPanel.prototype.beforeShow = function() {
+GeneralPanel.prototype.beforeShow = function() {
   if (!this._initialized) {
     this.init();
   }
 };
 
-RootPanel.prototype.show = function() {
+GeneralPanel.prototype.show = function() {
   this.generalSettingsGroupView.start();
 
   if (this.handwritingSettingsGroupView) {
     this.handwritingSettingsGroupView.start();
   }
 
-  this._container.querySelector('gaia-header').addEventListener('action', this);
+  this.container.querySelector('gaia-header').addEventListener('action', this);
 
   // we might not have user dict
   if (this._menuUDItem) {
@@ -71,14 +71,14 @@ RootPanel.prototype.show = function() {
   }
 };
 
-RootPanel.prototype.beforeHide = function() {
+GeneralPanel.prototype.beforeHide = function() {
   this.generalSettingsGroupView.stop();
 
   if (this.handwritingSettingsGroupView) {
     this.handwritingSettingsGroupView.stop();
   }
 
-  this._container.querySelector('gaia-header')
+  this.container.querySelector('gaia-header')
     .removeEventListener('action', this);
 
   if (this._menuUDItem) {
@@ -86,10 +86,10 @@ RootPanel.prototype.beforeHide = function() {
   }
 };
 
-RootPanel.prototype.hide = function() {
+GeneralPanel.prototype.hide = function() {
 };
 
-RootPanel.prototype.handleEvent = function(evt) {
+GeneralPanel.prototype.handleEvent = function(evt) {
   switch (evt.type) {
     case 'action':
       this.app.requestClose();
@@ -104,6 +104,6 @@ RootPanel.prototype.handleEvent = function(evt) {
   }
 };
 
-exports.RootPanel = RootPanel;
+exports.GeneralPanel = GeneralPanel;
 
 })(window);

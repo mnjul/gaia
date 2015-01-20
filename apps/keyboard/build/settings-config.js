@@ -57,7 +57,7 @@ function addSettings(appDirPath, distDirPath, enabledFeatures) {
 
     var hwSettings = utils.getFile(appDirPath, 'handwriting-settings.html');
     var hwContent = utils.getFileContent(hwSettings);
-    domDoc.getElementById('root-container').innerHTML += hwContent;
+    domDoc.getElementById('general-container').innerHTML += hwContent;
   }
 
   if (enabledFeatures.userDict) {
@@ -67,7 +67,7 @@ function addSettings(appDirPath, distDirPath, enabledFeatures) {
 
     var udSettings = utils.getFile(appDirPath, 'user-dictionary-settings.html');
     var udContent = utils.getFileContent(udSettings);
-    domDoc.querySelector('#root-container #general-settings ul').innerHTML +=
+    domDoc.querySelector('#general-container #general-settings ul').innerHTML +=
       udContent;
   }
 

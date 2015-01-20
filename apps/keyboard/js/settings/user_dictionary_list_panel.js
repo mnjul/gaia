@@ -22,7 +22,7 @@ var UserDictionaryListPanel = function(app) {
   this._model = new UserDictionary(this);
   this._initialized= false;
 
-  this._container = null;
+  this.container = null;
   this._listContainer = null;
 
   // a WeakMap from word list's each <a> element to an actual word.
@@ -34,8 +34,8 @@ UserDictionaryListPanel.prototype.CONTAINER_ID = 'panel-ud-wordlist';
 UserDictionaryListPanel.prototype.init = function() {
   this._initialized = true;
 
-  this._container = document.getElementById(this.CONTAINER_ID);
-  this._listContainer = this._container.querySelector('#ud-wordlist-list');
+  this.container = document.getElementById(this.CONTAINER_ID);
+  this._listContainer = this.container.querySelector('#ud-wordlist-list');
 
   this._model.start();
 
@@ -44,7 +44,7 @@ UserDictionaryListPanel.prototype.init = function() {
 
 UserDictionaryListPanel.prototype.uninit = function() {
   this._initialized = false;
-  this._container = null;
+  this.container = null;
   this._listContainer = null;
   this._model.stop();
   this._domWordMap = null;
@@ -56,9 +56,9 @@ UserDictionaryListPanel.prototype.beforeShow = function(options) {
 
     return this._model.getList().then(words => {
       if (!words || words.size === 0) {
-        this._container.classList.add('empty');
+        this.container.classList.add('empty');
       } else {
-        this._container.classList.remove('empty');
+        this.container.classList.remove('empty');
         words.forEach(word => this._appendList(word.trim()));
       }
     }).catch(e => console.error(e));
@@ -66,21 +66,21 @@ UserDictionaryListPanel.prototype.beforeShow = function(options) {
 };
 
 UserDictionaryListPanel.prototype.show = function() {
-  this._container.querySelector('#ud-addword-btn')
+  this.container.querySelector('#ud-addword-btn')
     .addEventListener('click', this);
 
   this._listContainer.addEventListener('click', this);
 
-  this._container.querySelector('gaia-header').addEventListener('action', this);
+  this.container.querySelector('gaia-header').addEventListener('action', this);
 };
 
 UserDictionaryListPanel.prototype.beforeHide = function() {
-  this._container.querySelector('#ud-addword-btn')
+  this.container.querySelector('#ud-addword-btn')
     .removeEventListener('click', this);
 
   this._listContainer.removeEventListener('click', this);
 
-  this._container.querySelector('gaia-header')
+  this.container.querySelector('gaia-header')
     .removeEventListener('action', this);
 };
 
@@ -102,7 +102,7 @@ UserDictionaryListPanel.prototype.handleEvent = function(evt) {
       break;
 
     case 'action':
-      this.app.panelController.navigateToRoot();
+      this.app.panelController.navigateToGeneral();
       break;
   }
 };
@@ -157,7 +157,7 @@ UserDictionaryListPanel.prototype._addWord = function(word) {
     var awakeLock = this.app.closeLockManager.requestLock('stayAwake');
     this._model.addWord(word).then(() => {
       awakeLock.unlock();
-      this._container.classList.remove('empty');
+      this.container.classList.remove('empty');
       this._appendList(word);
     }).catch(e => {
       awakeLock.unlock();
@@ -180,7 +180,7 @@ UserDictionaryListPanel.prototype._removeWord = function(word, wordElem) {
     this._listContainer.removeChild(wordElem.parentNode);
 
     if (0 === this._listContainer.childNodes.length) {
-      this._container.classList.add('empty');
+      this.container.classList.add('empty');
     }
   }).catch(e => {
     awakeLock.unlock();
