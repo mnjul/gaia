@@ -17,13 +17,14 @@ var GeneralPanel = function(app) {
 };
 
 GeneralPanel.prototype.CONTAINER_ID = 'general';
+GeneralPanel.prototype.USER_DICT_ITEM_ID = 'menu-userdict';
 
 GeneralPanel.prototype.init = function() {
   this._initialized = true;
 
   this.container = document.getElementById(this.CONTAINER_ID);
 
-  this._menuUDItem = document.getElementById('menu-userdict');
+  this._menuUDItem = document.getElementById(this.USER_DICT_ITEM_ID);
 
   this.generalSettingsGroupView = new GeneralSettingsGroupView(this.app);
   this.generalSettingsGroupView.init();
@@ -97,7 +98,7 @@ GeneralPanel.prototype.handleEvent = function(evt) {
 
     case 'click':
       this.app.panelController.navigateToPanel(
-        this.app.userDictionaryListPanel
+        this.app.panelController.userDictionaryListPanel
       );
       evt.preventDefault();
       break;

@@ -102,7 +102,7 @@ UserDictionaryListPanel.prototype.handleEvent = function(evt) {
       break;
 
     case 'action':
-      this.app.panelController.navigateToGeneral();
+      this.app.panelController.navigateToRoot();
       break;
   }
 };
@@ -120,7 +120,8 @@ UserDictionaryListPanel.prototype._appendList = function(word) {
 };
 
 UserDictionaryListPanel.prototype._showAddDialog = function() {
-  this.app.dialogController.openDialog(this.app.userDictionaryEditDialog)
+  this.app.dialogController.openDialog(
+    this.app.dialogController.userDictionaryEditDialog)
   .then(
     result => {
       if ('commit' === result.action) {
@@ -133,8 +134,9 @@ UserDictionaryListPanel.prototype._showAddDialog = function() {
 UserDictionaryListPanel.prototype._showEditDialog = function(wordElem) {
   var word = this._domWordMap.get(wordElem);
 
-  this.app.dialogController.openDialog(this.app.userDictionaryEditDialog, {
-    word: word
+  this.app.dialogController.openDialog(
+    this.app.dialogController.userDictionaryEditDialog, {
+      word: word
   })
   .then(
     result => {
