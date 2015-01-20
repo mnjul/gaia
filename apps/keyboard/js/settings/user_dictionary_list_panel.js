@@ -20,7 +20,7 @@ var UserDictionaryListPanel = function(app) {
   this.app = app;
 
   this._model = new UserDictionary(this);
-  this._initialized= false;
+  this._started= false;
 
   this.container = null;
   this._listContainer = null;
@@ -31,8 +31,8 @@ var UserDictionaryListPanel = function(app) {
 
 UserDictionaryListPanel.prototype.CONTAINER_ID = 'panel-ud-wordlist';
                     
-UserDictionaryListPanel.prototype.init = function() {
-  this._initialized = true;
+UserDictionaryListPanel.prototype.start = function() {
+  this._started = true;
 
   this.container = document.getElementById(this.CONTAINER_ID);
   this._listContainer = this.container.querySelector('#ud-wordlist-list');
@@ -42,8 +42,8 @@ UserDictionaryListPanel.prototype.init = function() {
   this._domWordMap = new WeakMap();
 };
 
-UserDictionaryListPanel.prototype.uninit = function() {
-  this._initialized = false;
+UserDictionaryListPanel.prototype.stop = function() {
+  this._started = false;
   this.container = null;
   this._listContainer = null;
   this._model.stop();
@@ -51,8 +51,8 @@ UserDictionaryListPanel.prototype.uninit = function() {
 };
 
 UserDictionaryListPanel.prototype.beforeShow = function(options) {
-  if (!this._initialized) {
-    this.init();
+  if (!this._started) {
+    this.start();
 
     return this._model.getList().then(words => {
       if (!words || words.size === 0) {

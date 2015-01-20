@@ -26,7 +26,7 @@
  * - hide(): when a panel/dialog has fully transitioned out.
  * Each event hook may optionally be asynchronous by returning a Promise.
  *
- * Additionally, each panel/dialog should initialize itself on first
+ * Additionally, each panel/dialog should start() itself on first
  *  beforeShow() in its object lifetime.
  *
  * == Dialogs ==
@@ -81,11 +81,11 @@ PanelController.prototype.start = function() {
 PanelController.prototype.stop = function() {
   this._currentPanel = null;
 
-  this.rootPanel.uninit();
+  this.rootPanel.stop();
   this.rootPanel = null;
 
   if (this.UserDictionaryListPanel) {
-    this.userDictionaryListPanel.uninit();
+    this.userDictionaryListPanel.stop();
     this.userDictionaryListPanel = null;
   }
 };
@@ -162,7 +162,7 @@ DialogController.prototype.start = function() {
 
 DialogController.prototype.stop = function() {
   if (this.userDictionaryEditDialog) {
-    this.userDictionaryEditDialog.uninit();
+    this.userDictionaryEditDialog.stop();
     this.userDictionaryEditDialog = null;
    }
 };

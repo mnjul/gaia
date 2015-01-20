@@ -19,7 +19,7 @@
 (function(exports) {
 
 var UserDictionaryEditDialog = function() {
-  this._initialized = false;
+  this._started = false;
 
   this.container = null;
   this._inputField = null;
@@ -31,23 +31,23 @@ UserDictionaryEditDialog.prototype.CONTAINER_ID = 'panel-ud-editword';
 
 UserDictionaryEditDialog.prototype.onsubmit = undefined;
 
-UserDictionaryEditDialog.prototype.init = function(){
-  this._initialized = true;
+UserDictionaryEditDialog.prototype.start = function(){
+  this._started = true;
 
   this.container = document.getElementById(this.CONTAINER_ID);
   this._inputField = this.container.querySelector('#ud-editword-input');
 };
 
-UserDictionaryEditDialog.prototype.uninit = function(){
-  this._initialized = false;
+UserDictionaryEditDialog.prototype.stop = function(){
+  this._started = false;
 
   this.container = null;
   this._inputField = null;
 };
 
 UserDictionaryEditDialog.prototype.beforeShow = function(options) {
-  if (!this._initialized) {
-    this.init();
+  if (!this._started) {
+    this.start();
   }
 
   // if options have "word", we're in edit mode.

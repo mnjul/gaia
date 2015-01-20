@@ -13,12 +13,9 @@ var SettingsView = function(app, container, settingsConstructor) {
   this.taskQueue = null;
 };
 
-SettingsView.prototype.init = function() {
+SettingsView.prototype.start = function() {
   this.settings = new this.SettingsConstructor();
   this.settings.promiseManager = this.app.settingsPromiseManager;
-};
-
-SettingsView.prototype.start = function() {
   this.settings.onsettingchange = function() {
     this.taskQueue = this.taskQueue
       .then(this._updateUI.bind(this))
@@ -106,8 +103,6 @@ SettingsView.prototype.handleEvent = function(evt) {
 };
 
 SettingsView.prototype.stop = function() {
-  this.settings.stopObserve();
-
   this.elements.forEach(function(el) {
     if (!el) {
       return;
@@ -116,13 +111,10 @@ SettingsView.prototype.stop = function() {
     el.removeEventListener('change', this);
   });
 
+  this.settings = null;
   this.elements = [];
 
   this.taskQueue = null;
-};
-
-SettingsView.prototype.uninit = function() {
-  this.settings = null;
 };
 
 exports.SettingsView = SettingsView;

@@ -5,7 +5,7 @@
 (function(exports) {
 
 var GeneralPanel = function(app) {
-  this._initialized= false;
+  this._started= false;
 
   this.container = null;
   this._menuUDItem = null;
@@ -19,51 +19,45 @@ var GeneralPanel = function(app) {
 GeneralPanel.prototype.CONTAINER_ID = 'general';
 GeneralPanel.prototype.USER_DICT_ITEM_ID = 'menu-userdict';
 
-GeneralPanel.prototype.init = function() {
-  this._initialized = true;
+GeneralPanel.prototype.start = function() {
+  this._started = true;
 
   this.container = document.getElementById(this.CONTAINER_ID);
 
   this._menuUDItem = document.getElementById(this.USER_DICT_ITEM_ID);
 
   this.generalSettingsGroupView = new GeneralSettingsGroupView(this.app);
-  this.generalSettingsGroupView.init();
+  this.generalSettingsGroupView.start();
 
   // We might not have handwriting settings
   if (typeof HandwritingSettingsGroupView === 'function') {
     this.handwritingSettingsGroupView =
       new HandwritingSettingsGroupView(this.app);
-    this.handwritingSettingsGroupView.init();
+    this.handwritingSettingsGroupView.start();
   }
 };
 
-GeneralPanel.prototype.uninit = function() {
-  this._initialized = false;
+GeneralPanel.prototype.stop = function() {
+  this._started = false;
   this.container = null;
   this._menuUDItem = null;
 
-  this.generalSettingsGroupView.uninit();
+  this.generalSettingsGroupView.stop();
   this.generalSettingsGroupView = null;
 
   if (this.handwritingSettingsGroupView) {
-    this.handwritingSettingsGroupView.uninit();
+    this.handwritingSettingsGroupView.stop();
     this.handwritingSettingsGroupView = null;
   }
 };
 
 GeneralPanel.prototype.beforeShow = function() {
-  if (!this._initialized) {
-    this.init();
+  if (!this._started) {
+    this.start();
   }
 };
 
 GeneralPanel.prototype.show = function() {
-  this.generalSettingsGroupView.start();
-
-  if (this.handwritingSettingsGroupView) {
-    this.handwritingSettingsGroupView.start();
-  }
-
   this.container.querySelector('gaia-header').addEventListener('action', this);
 
   // we might not have user dict
@@ -73,12 +67,6 @@ GeneralPanel.prototype.show = function() {
 };
 
 GeneralPanel.prototype.beforeHide = function() {
-  this.generalSettingsGroupView.stop();
-
-  if (this.handwritingSettingsGroupView) {
-    this.handwritingSettingsGroupView.stop();
-  }
-
   this.container.querySelector('gaia-header')
     .removeEventListener('action', this);
 
