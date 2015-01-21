@@ -67,10 +67,12 @@ PanelController.prototype.ROOT_PANEL_CLASS = GeneralPanel;
 
 PanelController.prototype.start = function() {
   this.rootPanel = new this.RootPanelClass(this.app);
+  this.rootPanel.start();
 
   // We support user dictionary!
   if (typeof UserDictionaryListPanel === 'function') {
     this.userDictionaryListPanel = new UserDictionaryListPanel(this.app);
+    this.userDictionaryListPanel.start();
   }
 
   Promise.resolve(this.rootPanel.beforeShow())
@@ -157,6 +159,7 @@ DialogController.prototype.start = function() {
   // We support user dictionary!
   if (typeof UserDictionaryEditDialog === 'function') {
     this.userDictionaryEditDialog = new UserDictionaryEditDialog(this);
+    this.userDictionaryEditDialog.start();
   }
 };
 

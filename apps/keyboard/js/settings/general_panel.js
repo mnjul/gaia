@@ -5,8 +5,6 @@
 (function(exports) {
 
 var GeneralPanel = function(app) {
-  this._started= false;
-
   this.container = null;
   this._menuUDItem = null;
 
@@ -20,8 +18,6 @@ GeneralPanel.prototype.CONTAINER_ID = 'general';
 GeneralPanel.prototype.USER_DICT_ITEM_ID = 'menu-userdict';
 
 GeneralPanel.prototype.start = function() {
-  this._started = true;
-
   this.container = document.getElementById(this.CONTAINER_ID);
 
   this._menuUDItem = document.getElementById(this.USER_DICT_ITEM_ID);
@@ -38,7 +34,6 @@ GeneralPanel.prototype.start = function() {
 };
 
 GeneralPanel.prototype.stop = function() {
-  this._started = false;
   this.container = null;
   this._menuUDItem = null;
 
@@ -52,9 +47,6 @@ GeneralPanel.prototype.stop = function() {
 };
 
 GeneralPanel.prototype.beforeShow = function() {
-  if (!this._started) {
-    this.start();
-  }
 };
 
 GeneralPanel.prototype.show = function() {
