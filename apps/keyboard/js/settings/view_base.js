@@ -22,7 +22,7 @@
  *
  * The beforeShow/show/beforeHide/hide hooks may optionally be asynchronous
  * by returning a Promise, which must be honored by its parent. These functions
- * are currently not used by Views (i.e. Panels and Dialogs' calls to children
+ * are currently not used by Views (i.e. Panels and Dialogs' calls to child
  * views' event hooks essentially do nothing)
  * 
  * [*] if this object is a View, then parent is Panel/Dialog.

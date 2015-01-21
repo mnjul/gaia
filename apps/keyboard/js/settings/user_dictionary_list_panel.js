@@ -1,6 +1,6 @@
 'use strict';
 
-/* global UserDictionary */
+/* global PanelBase, UserDictionary */
 
 /*
  * The panel for the list of user dictionary words. When there is no word,
@@ -22,17 +22,19 @@ var UserDictionaryListPanel = function(app) {
   this._model = new UserDictionary(this);
   this._populated = false;
 
-  this.container = null;
   this._listContainer = null;
 
   // a WeakMap from word list's each <a> element to an actual word.
   this._domWordMap = null;
 };
 
+UserDictionaryListPanel.prototype = Object.create(PanelBase.prototype);
+
 UserDictionaryListPanel.prototype.CONTAINER_ID = 'panel-ud-wordlist';
                     
 UserDictionaryListPanel.prototype.start = function() {
-  this.container = document.getElementById(this.CONTAINER_ID);
+  PanelBase.prototype.start.call(this);
+
   this._listContainer = this.container.querySelector('#ud-wordlist-list');
 
   this._model.start();
@@ -41,8 +43,9 @@ UserDictionaryListPanel.prototype.start = function() {
 };
 
 UserDictionaryListPanel.prototype.stop = function() {
+  PanelBase.prototype.stop.call(this);
+
   this._populated = false;
-  this.container = null;
   this._listContainer = null;
   this._model.stop();
   this._domWordMap = null;
@@ -80,10 +83,6 @@ UserDictionaryListPanel.prototype.beforeHide = function() {
 
   this.container.querySelector('gaia-header')
     .removeEventListener('action', this);
-};
-
-UserDictionaryListPanel.prototype.hide = function() {
-
 };
 
 UserDictionaryListPanel.prototype.handleEvent = function(evt) {

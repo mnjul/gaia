@@ -17,17 +17,6 @@
  * The transition between general and word list panels are written
  * ad-hoc thereby.
  *
- * The architecture is like Settings app and we have a few exposed event hooks
- * required for each panel/dialog class, like:
- * - beforeShow(): when a panel/dialog is to be shown.
- * - show(): when a panel/dialog has fully transitioned in.
-             Do event binding here.
- * - beforeHide(): when a panel/dialog is to be hidden. Do event unbinding here.
- * - hide(): when a panel/dialog has fully transitioned out.
- * Each event hook may optionally be asynchronous by returning a Promise.
- *
- * Additionally, each panel/dialog should start() itself on first
- *  beforeShow() in its object lifetime.
  *
  * == Dialogs ==
  *
