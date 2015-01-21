@@ -1,5 +1,7 @@
 'use strict';
 
+/* global ViewBase */
+
 (function(exports) {
 
 var SettingsView = function(app, container, settingsConstructor) {
@@ -12,6 +14,8 @@ var SettingsView = function(app, container, settingsConstructor) {
 
   this.taskQueue = null;
 };
+
+SettingsView.prototype = Object.create(ViewBase.prototype);
 
 SettingsView.prototype.start = function() {
   this.settings = new this.SettingsConstructor();

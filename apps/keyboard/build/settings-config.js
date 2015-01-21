@@ -43,17 +43,18 @@ function addSettings(appDirPath, distDirPath, enabledFeatures) {
   // the specified point in the hierarchy"
   // Is it a bug?
 
-  var firstScriptElInHead = domDoc.head.querySelector('script');
+  var baseViewScriptElemInHead =
+    domDoc.head.querySelector('script[src="js/settings/view_base.js"]');
 
   var insertScript = function (src) {
     var script = domDoc.createElement('script');
     script.defer = 'defer';
     script.src = src;
-    domDoc.head.insertBefore(script, firstScriptElInHead);
+    domDoc.head.insertBefore(script, baseViewScriptElemInHead.nextSibling);
   };
 
   if (enabledFeatures.handwriting) {
-    insertScript('js/settings/handwriting_settings.js');
+    insertScript('js/settings/handwriting_settings_view.js');
 
     var hwSettings = utils.getFile(appDirPath, 'handwriting-settings.html');
     var hwContent = utils.getFileContent(hwSettings);

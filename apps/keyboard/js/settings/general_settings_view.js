@@ -1,6 +1,6 @@
 'use strict';
 
-/* global SettingsView,
+/* global SettingsView, ViewBase,
           SoundFeedbackSettings, VibrationFeedbackSettings, IMEngineSettings */
 
 (function(exports) {
@@ -14,10 +14,12 @@ var GeneralSettingsGroupView = function GeneralSettingsGroupView(app) {
   this.imEngineSettingsView = null;
 };
 
-GeneralSettingsGroupView.prototype.PANEL_ID = 'general-settings';
+GeneralSettingsGroupView.prototype = Object.create(ViewBase.prototype);
+
+GeneralSettingsGroupView.prototype.VIEW_ID = 'general-settings';
 
 GeneralSettingsGroupView.prototype.start = function() {
-  var container = this.container = document.getElementById(this.PANEL_ID);
+  var container = this.container = document.getElementById(this.VIEW_ID);
 
   this.soundFeedbackSettingsView =
     new SettingsView(this.app, container, SoundFeedbackSettings);

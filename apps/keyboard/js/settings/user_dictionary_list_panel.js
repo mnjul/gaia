@@ -84,7 +84,7 @@ UserDictionaryListPanel.prototype.beforeHide = function() {
     .removeEventListener('action', this);
 };
 
-UserDictionaryListPanel.prototype.hide = function(evt) {
+UserDictionaryListPanel.prototype.hide = function() {
 
 };
 

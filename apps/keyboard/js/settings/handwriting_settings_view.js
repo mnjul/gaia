@@ -1,6 +1,6 @@
 'use strict';
 
-/* global SettingsView, HandwritingPadSettings */
+/* global SettingsView, HandwritingPadSettings, ViewBase */
 
 (function(exports) {
 
@@ -11,10 +11,12 @@ var HandwritingSettingsGroupView = function(app) {
   this.handwritingSettingsView = null;
 };
 
-HandwritingSettingsGroupView.prototype.PANEL_ID = 'handwriting-settings';
+HandwritingSettingsGroupView.prototype = Object.create(ViewBase.prototype);
+
+HandwritingSettingsGroupView.prototype.VIEW_ID = 'handwriting-settings';
 
 HandwritingSettingsGroupView.prototype.start = function() {
-  var container = this.container = document.getElementById(this.PANEL_ID);
+  var container = this.container = document.getElementById(this.VIEW_ID);
 
   this.handwritingSettingsView =
     new SettingsView(this.app, container, HandwritingPadSettings);

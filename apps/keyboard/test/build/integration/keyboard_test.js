@@ -339,8 +339,8 @@ suite('Keyboard settings building tests', function() {
         var settingsDOMDoc = getSettingsDomDoc();
 
         assert.isTrue(getScriptsFromDomDoc(settingsDOMDoc).every(function(elem){
-          return elem.src !== 'js/settings/handwriting_settings.js';
-        }), 'No script should include handwriting_settings.js');
+          return elem.src !== 'js/settings/handwriting_settings_view.js';
+        }), 'No script should include handwriting_settings_view.js');
 
         assert.isTrue(
         getSectionsFromGeneralPanel(settingsDOMDoc).every(function(elem){
@@ -360,8 +360,8 @@ suite('Keyboard settings building tests', function() {
         var settingsDOMDoc = getSettingsDomDoc();
 
         assert.isTrue(getScriptsFromDomDoc(settingsDOMDoc).some(function(elem){
-          return elem.src === 'js/settings/handwriting_settings.js';
-        }), 'Some script should include handwriting_settings.js');
+          return elem.src === 'js/settings/handwriting_settings_view.js';
+        }), 'Some script should include handwriting_settings_view.js');
 
         assert.isTrue(
         getSectionsFromGeneralPanel(settingsDOMDoc).some(function(elem){
