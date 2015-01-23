@@ -5,28 +5,28 @@
 (function(exports) {
 
 var HandwritingSettingsGroupView = function(app) {
-  this.app = app;
+  ViewBase.apply(this);
 
-  this.container = null;
-  this.handwritingSettingsView = null;
+  this.app = app;
 };
 
 HandwritingSettingsGroupView.prototype = Object.create(ViewBase.prototype);
 
-HandwritingSettingsGroupView.prototype.VIEW_ID = 'handwriting-settings';
+HandwritingSettingsGroupView.prototype.CONTAINER_ID = 'handwriting-settings';
 
 HandwritingSettingsGroupView.prototype.start = function() {
-  var container = this.container = document.getElementById(this.VIEW_ID);
+  ViewBase.prototype.start.call(this);
 
-  this.handwritingSettingsView =
-    new SettingsView(this.app, container, HandwritingPadSettings);
-  this.handwritingSettingsView.start();
+  this.subViews.handwritingSettings =
+    new SettingsView(this.app, this.container, HandwritingPadSettings);
+  this.subViews.handwritingSettings.start();
 };
 
 HandwritingSettingsGroupView.prototype.stop = function() {
-  this.container = null;
-  this.handwritingSettingsView.stop();
-  this.handwritingSettingsView = null;
+  ViewBase.prototype.stop.call(this);
+
+  this.subViews.handwritingSettings.stop();
+  delete this.subViews.handwritingSettings;
 };
 
 exports.HandwritingSettingsGroupView = HandwritingSettingsGroupView;

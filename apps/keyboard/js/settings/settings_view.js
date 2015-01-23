@@ -5,6 +5,8 @@
 (function(exports) {
 
 var SettingsView = function(app, container, settingsConstructor) {
+  ViewBase.apply(this);
+
   this.app = app;
   this.container = container;
   this.SettingsConstructor = settingsConstructor;

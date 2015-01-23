@@ -6,42 +6,42 @@
 (function(exports) {
 
 var GeneralSettingsGroupView = function GeneralSettingsGroupView(app) {
-  this.app = app;
+  ViewBase.apply(this);
 
-  this.container = null;
-  this.soundFeedbackSettingsView = null;
-  this.vibrationFeedbackSettingsView = null;
-  this.imEngineSettingsView = null;
+  this.app = app;
 };
 
 GeneralSettingsGroupView.prototype = Object.create(ViewBase.prototype);
 
-GeneralSettingsGroupView.prototype.VIEW_ID = 'general-settings';
+GeneralSettingsGroupView.prototype.CONTAINER_ID = 'general-settings';
 
 GeneralSettingsGroupView.prototype.start = function() {
-  var container = this.container = document.getElementById(this.VIEW_ID);
+  ViewBase.prototype.start.call(this);
 
-  this.soundFeedbackSettingsView =
-    new SettingsView(this.app, container, SoundFeedbackSettings);
-  this.soundFeedbackSettingsView.start();
+  this.subViews.soundFeedbackSettings =
+    new SettingsView(this.app, this.container, SoundFeedbackSettings);
+  this.subViews.soundFeedbackSettings.start();
 
-  this.vibrationFeedbackSettingsView =
-    new SettingsView(this.app, container, VibrationFeedbackSettings);
-  this.vibrationFeedbackSettingsView.start();
+  this.subViews.vibrationFeedbackSettings =
+    new SettingsView(this.app, this.container, VibrationFeedbackSettings);
+  this.subViews.vibrationFeedbackSettings.start();
 
-  this.imEngineSettingsView =
-    new SettingsView(this.app, container, IMEngineSettings);
-  this.imEngineSettingsView.start();
+  this.subViews.imEngineSettings =
+    new SettingsView(this.app, this.container, IMEngineSettings);
+  this.subViews.imEngineSettings.start();
 };
 
 GeneralSettingsGroupView.prototype.stop = function() {
-  this.container = null;
-  this.soundFeedbackSettingsView.stop();
-  this.soundFeedbackSettingsView = null;
-  this.vibrationFeedbackSettingsView.stop();
-  this.vibrationFeedbackSettingsView = null;
-  this.imEngineSettingsView.stop();
-  this.imEngineSettingsView = null;
+  ViewBase.prototype.stop.call(this);
+
+  this.subViews.soundFeedbackSettings.stop();
+  delete this.subViews.soundFeedbackSettings;
+
+  this.subViews.vibrationFeedbackSettings.stop();
+  delete this.subViews.vibrationFeedbackSettings;
+
+  this.subViews.imEngineSettings.stop();
+  delete this.subViews.imEngineSettings;
 };
 
 exports.GeneralSettingsGroupView = GeneralSettingsGroupView;

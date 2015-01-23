@@ -1,50 +1,51 @@
 'use strict';
 
-/* global PanelBase, ViewBase, GeneralSettingsGroupView,
-          HandwritingSettingsGroupView */
+/* global ViewBase, GeneralSettingsGroupView, HandwritingSettingsGroupView */
 
 (function(exports) {
 
 var GeneralPanel = function(app) {
+  ViewBase.apply(this);
+
   this._menuUDItem = null;
 
   this.app = app;
 };
 
-GeneralPanel.prototype = Object.create(PanelBase.prototype);
+GeneralPanel.prototype = Object.create(ViewBase.prototype);
 
 GeneralPanel.prototype.CONTAINER_ID = 'general';
 GeneralPanel.prototype.USER_DICT_ITEM_ID = 'menu-userdict';
 
 GeneralPanel.prototype.start = function() {
-  PanelBase.prototype.start.call(this);
+  ViewBase.prototype.start.call(this);
 
   this._menuUDItem = document.getElementById(this.USER_DICT_ITEM_ID);
 
-  this.views.general = new GeneralSettingsGroupView(this.app);
-  this.views.general.start();
+  this.subViews.general = new GeneralSettingsGroupView(this.app);
+  this.subViews.general.start();
 
   // We might not have handwriting settings
   if (typeof HandwritingSettingsGroupView === 'function') {
-    this.views.handwriting = new HandwritingSettingsGroupView(this.app);
-    this.views.handwriting.start();
+    this.subViews.handwriting = new HandwritingSettingsGroupView(this.app);
+    this.subViews.handwriting.start();
   } else {
     // drop in a dummy View to avoid future if-then-else'.
-    this.views.handwriting = new ViewBase();
-    this.views.handwriting.start();
+    this.subViews.handwriting = new ViewBase();
+    this.subViews.handwriting.start();
   }
 };
 
 GeneralPanel.prototype.stop = function() {
-  PanelBase.prototype.stop.call(this);
+  ViewBase.prototype.stop.call(this);
 
   this._menuUDItem = null;
 
-  this.views.general.stop();
-  delete this.views.general;
+  this.subViews.general.stop();
+  delete this.subViews.general;
 
-  this.views.handwriting.stop();
-  delete this.views.handwriting;
+  this.subViews.handwriting.stop();
+  delete this.subViews.handwriting;
 };
 
 GeneralPanel.prototype.show = function() {
@@ -55,7 +56,7 @@ GeneralPanel.prototype.show = function() {
     this._menuUDItem.addEventListener('click', this);
   }
 
-  return PanelBase.prototype.show.call(this);
+  return ViewBase.prototype.show.call(this);
 };
 
 GeneralPanel.prototype.beforeHide = function() {
@@ -66,7 +67,7 @@ GeneralPanel.prototype.beforeHide = function() {
     this._menuUDItem.removeEventListener('click', this);
   }
 
-  return PanelBase.prototype.hide.call(this);
+  return ViewBase.prototype.hide.call(this);
 };
 
 GeneralPanel.prototype.handleEvent = function(evt) {

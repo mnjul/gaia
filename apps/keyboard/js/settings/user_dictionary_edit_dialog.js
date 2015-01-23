@@ -1,6 +1,6 @@
 'use strict';
 
-/* global PanelBase, KeyEvent */
+/* global ViewBase, KeyEvent */
 
 /*
  * We may be in two modes: "edit mode" or "add mode".
@@ -19,25 +19,27 @@
 (function(exports) {
 
 var UserDictionaryEditDialog = function() {
+  ViewBase.apply(this);
+
   this._inputField = null;
 
   this._oldWord = undefined;
 };
 
-UserDictionaryEditDialog.prototype = Object.create(PanelBase.prototype);
+UserDictionaryEditDialog.prototype = Object.create(ViewBase.prototype);
 
 UserDictionaryEditDialog.prototype.CONTAINER_ID = 'panel-ud-editword';
 
 UserDictionaryEditDialog.prototype.onsubmit = undefined;
 
 UserDictionaryEditDialog.prototype.start = function(){
-  PanelBase.prototype.start.call(this);
+  ViewBase.prototype.start.call(this);
 
   this._inputField = this.container.querySelector('#ud-editword-input');
 };
 
 UserDictionaryEditDialog.prototype.stop = function(){
-  PanelBase.prototype.stop.call(this);
+  ViewBase.prototype.stop.call(this);
 
   this._inputField = null;
 };

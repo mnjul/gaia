@@ -1,6 +1,6 @@
 'use strict';
 
-/* global PanelBase, UserDictionary */
+/* global ViewBase, UserDictionary */
 
 /*
  * The panel for the list of user dictionary words. When there is no word,
@@ -17,6 +17,8 @@
 (function(exports) {
 
 var UserDictionaryListPanel = function(app) {
+  ViewBase.apply(this);
+
   this.app = app;
 
   this._model = new UserDictionary(this);
@@ -28,12 +30,12 @@ var UserDictionaryListPanel = function(app) {
   this._domWordMap = null;
 };
 
-UserDictionaryListPanel.prototype = Object.create(PanelBase.prototype);
+UserDictionaryListPanel.prototype = Object.create(ViewBase.prototype);
 
 UserDictionaryListPanel.prototype.CONTAINER_ID = 'panel-ud-wordlist';
                     
 UserDictionaryListPanel.prototype.start = function() {
-  PanelBase.prototype.start.call(this);
+  ViewBase.prototype.start.call(this);
 
   this._listContainer = this.container.querySelector('#ud-wordlist-list');
 
@@ -43,7 +45,7 @@ UserDictionaryListPanel.prototype.start = function() {
 };
 
 UserDictionaryListPanel.prototype.stop = function() {
-  PanelBase.prototype.stop.call(this);
+  ViewBase.prototype.stop.call(this);
 
   this._populated = false;
   this._listContainer = null;
