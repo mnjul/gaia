@@ -150,6 +150,132 @@ UserDictionary.prototype._getBlob = function() {
   return this._dbStore.getItem('dictblob');
 };
 
+// benchmark saves
+
+// app.panelController.userDictionaryListPanel._model._bm_saves(100);
+UserDictionary.prototype._bm_oneSave = function(numWords, resultResolve) {
+  var getRandomChar = () =>
+    String.fromCharCode(Math.floor(Math.random() * 26) + 'a'.charCodeAt(0));
+
+  var range = (to) => {
+    var rangeGenerator = function *() {
+      for(var i = 0; i < to; i++){
+        yield i;
+      }
+    };
+
+    return Array.from(rangeGenerator());
+  };
+
+  var getRandomString = () => range(4 + Math.floor(Math.random() * 8)).reduce(
+    (str, _) => str + getRandomChar(), '');
+
+  var wordList = range(numWords).map(() => getRandomString());
+
+  // console.log('Sanity, wordList: ', JSON.stringify(wordList));
+  // console.log('Sanity, wordList length: ', wordList.length);
+
+  this._wordSet = new Set(wordList);
+
+  var t0, tdiff1, tdiff2;
+
+  t0 = window.performance.now();
+
+  var dictBlob =
+    0 === wordList.length ?
+    undefined :
+    new WordListConverter(wordList).toBlob();
+
+  tdiff1 = window.performance.now() - t0;
+
+  var p = this._saveQueue.then(
+    () => {
+      t0 = window.performance.now();
+      this._dbStore.setItems({
+        'wordlist': wordList,
+        'dictblob': dictBlob
+      }).then(() => {
+        tdiff2 = window.performance.now() - t0;
+
+        resultResolve([tdiff1, tdiff2]);
+      });
+
+      return wordList;
+    }
+  );
+
+  this._saveQueue = p;
+
+  this._saveQueue = this._saveQueue.catch(e => {
+    console.error(e);
+  });
+
+  return p;
+};
+
+UserDictionary.prototype._bm_saves = function(numWords) {
+  const NUM_CASES = 20;
+  const STEP_INTERVAL = 1500;
+
+  var range = (to) => {
+    var rangeGenerator = function *() {
+      for(var i = 0; i < to; i++){
+        yield i;
+      }
+    };
+
+    return Array.from(rangeGenerator());
+  };
+
+  var resolves = [];
+  var promises = [for (i of range(NUM_CASES))
+                  new Promise(res => {resolves[i] = res;})];
+
+  // lock-stepping on setTimeout, each case 1.5s
+
+  var count = 0;
+  var step = () => {
+    console.log(`case ${count}`);
+    this._bm_oneSave(numWords, resolves[count]);
+    count++;
+
+    if (count < NUM_CASES) {
+      setTimeout(step, STEP_INTERVAL);
+    }
+  };
+
+  setTimeout(step);
+
+  Promise.all(promises).then(results2D => {
+    var blobDiffs = results2D.map(r => r[0]);
+    var saveDiffs = results2D.map(r => r[1]);
+
+    var stats = diffs => {
+      var mean = diffs.reduce((res, curr) => (res + curr), 0) / diffs.length;
+      var stddev = Math.sqrt(
+        diffs.reduce((res, curr) => (res + Math.pow(curr - mean, 2)), 0) /
+        (diffs.length - 1)
+      );
+
+      var max = Math.max(...diffs);
+      var min = Math.min(...diffs);
+
+      return [mean, stddev, max, min];
+    };
+
+    var blobStats = stats(blobDiffs);
+    var saveStats = stats(saveDiffs);
+
+    console.log(`${numWords} words: Blob generation:
+      mean: ${blobStats[0]}, max: ${blobStats[2]}, min: ${blobStats[3]},
+      stddev: ${blobStats[1]}`);
+
+    console.log(`${numWords} words: IndexedDB save:
+      mean: ${saveStats[0]}, max: ${saveStats[2]}, min: ${saveStats[3]},
+      stddev: ${saveStats[1]}`);
+  });
+};
+
 exports.UserDictionary = UserDictionary;
 
 })(window);
