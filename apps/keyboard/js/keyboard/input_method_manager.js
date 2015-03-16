@@ -630,6 +630,8 @@ InputMethodManager._bm_latinPrediction = function(cases, useUserDict) {
 
       var predictStats = stats(predictDiffs);
 
+      predictStats = predictStats.map(s => s.toFixed(3));
+
       console.log(`${cases.length} predictions, useUserDict: ${useUserDict}:
         mean: ${predictStats[0]}, max: ${predictStats[2]}, min: ${predictStats[3]},
         stddev: ${predictStats[1]}`);

@@ -268,6 +268,9 @@ UserDictionary.prototype._bm_saves = function(numWords) {
     var blobStats = stats(blobDiffs);
     var saveStats = stats(saveDiffs);
 
+    blobStats = blobStats.map(s => s.toFixed(3));
+    saveStats = saveStats.map(s => s.toFixed(3));
+
     console.log(`${numWords} words: Blob generation:
       mean: ${blobStats[0]}, max: ${blobStats[2]}, min: ${blobStats[3]},
       stddev: ${blobStats[1]}`);
