@@ -523,9 +523,16 @@ InputMethodManager.prototype.handleEvent = function(evt) {
   }
 };
 
+// Benchmark on predictions with and without user dictionaries.
+// Connect WebIDE to Keyboard. At console, type:
 // var cases = InputMethodManager._bm_genLatinInputs(100);
 // InputMethodManager._bm_latinPrediction(cases, true);
+// ...and observe 100 cases' average results.
 // InputMethodManager._bm_latinPrediction(cases, false);
+// ...and observe 100 cases' average results.
+//
+// You need to populate the dictionary first, though,
+// see UserDictionary.prototype._bm_oneSave().
 
 InputMethodManager._bm_genLatinInputs = function(numCases) {
   var getRandomChar = () =>

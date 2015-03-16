@@ -150,9 +150,11 @@ UserDictionary.prototype._getBlob = function() {
   return this._dbStore.getItem('dictblob');
 };
 
-// benchmark saves
-
+// Benchmark on saving of user dictionary words, including
+// TST blob generation & saving to IndexedDB.
+// Connect WebIDE to KeyboardSettingsApp. At console, type:
 // app.panelController.userDictionaryListPanel._model._bm_saves(100);
+// ...and observe 100 cases' average results.
 UserDictionary.prototype._bm_oneSave = function(numWords, resultResolve) {
   var getRandomChar = () =>
     String.fromCharCode(Math.floor(Math.random() * 26) + 'a'.charCodeAt(0));
